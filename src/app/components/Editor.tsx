@@ -2,6 +2,7 @@
 import {ChangeEvent, useEffect, useRef, useState} from "react";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import {fetchFile, toBlobURL} from "@ffmpeg/util";
+import {Button} from "@/components/ui/button";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -9,6 +10,7 @@ export default function Editor() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [loaded, setLoaded] = useState(false);
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
+    const [imageFormat, setImageFormat] = useState<string | null>(null);
 
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const [image, setImage] = useState<Uint8Array | null>(null);
@@ -41,14 +43,14 @@ export default function Editor() {
         const file = (e.target as HTMLInputElement)!.files![0];
 
         const format = file.type.split("/")[1];
-        // const format = file.type.split("/")[1] as Format;
-        // setVideoFormat(format);
+        setImageFormat(format);
 
         const fileData = await fetchFile(file);
         const ffmpeg = ffmpegRef.current;
 
-        // await ffmpeg.writeFile(`input.${format}`, fileData);
         await ffmpeg.writeFile(`input.${format}`, fileData);
+
+        await ffmpeg.writeFile("OpenSans-LightItalic.ttf", await fetchFile("http://localhost:3000/fonts/OpenSans-LightItalic.ttf"));
 
         await ffmpeg.exec([`-i`, `input.${format}`]);
 
@@ -57,7 +59,31 @@ export default function Editor() {
             setSourceImageURL(imageURL);
         });
 
+        console.log(await ffmpeg.listDir("/"));
+
         setImage(fileData);
+    }
+
+    const cleanUp = async () => {
+        const ffmpeg = ffmpegRef.current;
+        const data = await ffmpeg.readFile(`output.${imageFormat}`);
+        const imageURL = URL.createObjectURL(new Blob([data], { type: `image/${imageFormat}` }));
+        await ffmpeg.listDir("/");
+        await ffmpeg.deleteFile(`input.${imageFormat}`);
+        await ffmpeg.rename(`output.${imageFormat}`, `input.${imageFormat}`);
+        setSourceImageURL(imageURL);
+    }
+
+    const greyScale = async () => {
+        const ffmpeg = ffmpegRef.current;
+        await ffmpeg.exec(`-i input.${imageFormat} -vf hue=s=0 output.${imageFormat}`.split(" "));
+        await cleanUp();
+    }
+
+    const addText = async () => {
+        const ffmpeg = ffmpegRef.current;
+        await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=SampleText:x=10:y=10:fontsize=40`, `output.${imageFormat}`, "-loglevel", "debug"])
+        await cleanUp();
     }
 
     const ImageDisplay = () => {
@@ -70,6 +96,8 @@ export default function Editor() {
         <div>
             <p ref={messageRef}></p>
             <ImageDisplay/>
+            <Button onClick={() => {greyScale();}}>Grayscale</Button>
+            <Button onClick={() => {addText();}}>Add text</Button>
         </div>
         ) : (
         <div>
