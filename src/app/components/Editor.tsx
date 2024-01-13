@@ -21,7 +21,8 @@ export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const messageRef = useRef<HTMLParagraphElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [loaded, setLoaded] = useState(false);
+    // TODO:
+    // const [loaded, setLoaded] = useState(false);
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
     const [imageFormat, setImageFormat] = useState<string | null>(null);
 
@@ -29,8 +30,6 @@ export default function Editor() {
     const [image, setImage] = useState<Uint8Array | null>(null);
     const ffmpegRef = useRef(new FFmpeg());
     const [textColor, setTextColor] = useState("#0000ff");
-
-    const [imageCursorPosition, setImageCursorPosition] = useState<{x: number, y: number} | null>(null);
 
     const {register, handleSubmit} = useForm();
     const [data, setData] = useState<FieldValues | null>(null);
@@ -41,7 +40,10 @@ export default function Editor() {
 
     const [textPositionListener, setTextPositionListener] = useState<((e: any) => void) | null>(null);
 
+    const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+
     const handleTextApplyClick = (event: MouseEvent) => {
+        setDialogOpen(false);
         setIsApplyingText(true);
         const x = event.clientX;
         console.log("outer: ", x)
@@ -61,40 +63,22 @@ export default function Editor() {
         setTextPositionListener(textPositionListener);
     }
 
-    const addText = async () => {
-        const ffmpeg = ffmpegRef.current;
-        await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=${data?.text ?? "Sample Text"}:x=${imageCursorPosition!.x}:y=${imageCursorPosition!.y}:fontsize=40:fontcolor=#00ff00`, `output.${imageFormat}`, "-loglevel", "debug"])
-        await cleanUp();
-
-        window.removeEventListener("mousemove", textPositionListener!, false);
-        setTextPositionListener(null);
-        setIsApplyingText(false);
-    }
-
     const applyTextToImage = async (e: MouseEvent) => {
-        console.log("applyTextToImage runs");
-
-        const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const ffmpeg = ffmpegRef.current;
-        await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=${data?.text ?? "Sample Text"}:x=${x}:y=${y}:fontsize=40:fontcolor=#00ff00`, `output.${imageFormat}`, "-loglevel", "debug"])
-
-        window.removeEventListener("mousemove", textPositionListener!, false);
-        setTextPositionListener(null);
-        setIsApplyingText(false);
-
-        await cleanUp();
+        if (isApplyingText) {
+            const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+    
+            const ffmpeg = ffmpegRef.current;
+            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=${data?.text ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${data?.fontSize ?? 40}:fontcolor=#00ff00`, `output.${imageFormat}`, "-loglevel", "debug"])
+    
+            window.removeEventListener("mousemove", textPositionListener!, false);
+            setTextPositionListener(null);
+            setIsApplyingText(false);
+    
+            await cleanUp();
+        }
     }
-
-    const getPosition = (e: MouseEvent) => {
-        const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        setImageCursorPosition({x, y});
-    };
 
     useEffect(() => {
         load();
@@ -158,8 +142,9 @@ export default function Editor() {
         await cleanUp();
     }
 
-    const ImageDisplay = () => {
-        return (
+    return (isLoaded && image) ? (
+        <div>
+            <p ref={messageRef}></p>
             <img
                 ref={imageRef}
                 src={sourceImageURL!}
@@ -168,15 +153,8 @@ export default function Editor() {
                     await applyTextToImage(e);
                 }}
             />
-        );
-    };
-
-    return (isLoaded && image) ? (
-        <div>
-            <p ref={messageRef}></p>
-            <ImageDisplay/>
             <Button onClick={() => {greyScale();}}>Grayscale</Button>
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                     <Button variant="outline">Add text</Button>
                 </DialogTrigger>
@@ -194,8 +172,12 @@ export default function Editor() {
                             })}>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Text</Label>
+                                        <Label htmlFor="text">Text</Label>
                                         <Input {...register("text")} id="text" placeholder="Sample Text" required type="text" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fontSize">Font Size</Label>
+                                        <Input {...register("fontSize")} id="fontSize" placeholder="Enter size in px" required type="number" />
                                     </div>
                                     <div className="flex gap-x-4">
                                         <HexColorPicker color={textColor} onChange={setTextColor} />
@@ -212,17 +194,10 @@ export default function Editor() {
                             </form>
                         </div>
                     </div>
-                    <DialogFooter className="sm:justify-start">
-                        <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                                Close
-                            </Button>
-                        </DialogClose>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
             {isApplyingText ? (
-                <div ref={followDivRef} className={"absolute top-0 left-0 pointer-events-none"}>{data?.text}</div>
+                <div ref={followDivRef} style={{fontSize: `${data?.fontSize ?? 40}px`}} className={`absolute top-0 left-0 pointer-events-none`}>{data?.text}</div>
             ) : null}
         </div>
         ) : (
