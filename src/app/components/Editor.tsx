@@ -30,11 +30,12 @@ export default function Editor() {
     const ffmpegRef = useRef(new FFmpeg());
     const [textColor, setTextColor] = useState("#0000ff");
 
-    const {register, handleSubmit, getValues, control, watch} = useForm({
+    const {handleSubmit, getValues, control, watch} = useForm({
         mode: "onChange",
         defaultValues: {
             text: "Sample Data",
-            fontSize: 24
+            fontSize: 24,
+            fontFile: "OpenSans-LightItalic.ttf"
         }
     });
     const [data, setData] = useState<FieldValues | null>(null);
@@ -50,13 +51,10 @@ export default function Editor() {
     const handleTextApplyClick = (event: MouseEvent) => {
         setDialogOpen(false);
         setIsApplyingText(true);
-        const x = event.clientX;
-        console.log("outer: ", x);
 
         const textPositionListener = (e) => {
             const x = e ? e.clientX : event.clientX;
             const y = e ? e.clientY : event.clientY;
-            console.log("inner: ", x)
 
             if (followDivRef.current) {
                 followDivRef.current.style.top = `${y}px`;
@@ -68,15 +66,26 @@ export default function Editor() {
         setTextPositionListener(textPositionListener);
     }
 
+    const isFontLoaded = async (fontToCheck: string) => {
+        const ffmpeg = ffmpegRef.current;
+        const directories = await ffmpeg.listDir("/")
+        return directories.filter((dir) => dir.name === fontToCheck).length === 1;
+    }
+
     const applyTextToImage = async (e: MouseEvent) => {
         if (isApplyingText) {
             const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-    
+
             const ffmpeg = ffmpegRef.current;
-            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize") ?? 40}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
-    
+
+            if (!await isFontLoaded(watch("fontFile"))) {
+                await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`http://localhost:3000/fonts/${watch("fontFile")}`));
+            }
+
+            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize") ?? 40}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
+
             window.removeEventListener("mousemove", textPositionListener!, false);
             setTextPositionListener(null);
             setIsApplyingText(false);
@@ -181,7 +190,7 @@ export default function Editor() {
                                             control={control}
                                             name="text"
                                             render={({ field }) => {
-                                                return <input {...field} placeholder={"Sample Text"} required type={"text"} /> // ✅
+                                                return <input {...field} placeholder={"Sample Text"} required type={"text"} />
                                             }}
                                         />
                                     </div>
@@ -197,6 +206,21 @@ export default function Editor() {
                                                         placeholder={"(Optional) Font size in px"}
                                                         type={"number"}
                                                     />
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Controller
+                                            control={control}
+                                            name="fontFile"
+                                            render={({ field }) => {
+                                                return (
+                                                    <select {...field}>
+                                                        {FONTFACES.map((fontFace) => (
+                                                            <option key={fontFace.display} value={fontFace.file}>{fontFace.display}</option>
+                                                        ))}
+                                                    </select>
                                                 );
                                             }}
                                         />
