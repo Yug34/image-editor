@@ -5,17 +5,16 @@ import {fetchFile, toBlobURL} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
 
 import {
-    Dialog, DialogClose,
+    Dialog,
     DialogContent,
-    DialogDescription, DialogFooter,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {FieldValues, useForm} from "react-hook-form";
+import {Controller, FieldValues, useForm} from "react-hook-form";
 import {HexColorPicker} from "react-colorful";
+import {FONTFACES} from "@/constants";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -31,7 +30,13 @@ export default function Editor() {
     const ffmpegRef = useRef(new FFmpeg());
     const [textColor, setTextColor] = useState("#0000ff");
 
-    const {register, handleSubmit} = useForm();
+    const {register, handleSubmit, getValues, control, watch} = useForm({
+        mode: "onChange",
+        defaultValues: {
+            text: "Sample Data",
+            fontSize: 24
+        }
+    });
     const [data, setData] = useState<FieldValues | null>(null);
 
     const [isApplyingText, setIsApplyingText] = useState<boolean>(false);
@@ -46,7 +51,7 @@ export default function Editor() {
         setDialogOpen(false);
         setIsApplyingText(true);
         const x = event.clientX;
-        console.log("outer: ", x)
+        console.log("outer: ", x);
 
         const textPositionListener = (e) => {
             const x = e ? e.clientX : event.clientX;
@@ -70,7 +75,7 @@ export default function Editor() {
             const y = e.clientY - rect.top;
     
             const ffmpeg = ffmpegRef.current;
-            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=${data?.text ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${data?.fontSize ?? 40}:fontcolor=#00ff00`, `output.${imageFormat}`, "-loglevel", "debug"])
+            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=./OpenSans-LightItalic.ttf:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize") ?? 40}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
     
             window.removeEventListener("mousemove", textPositionListener!, false);
             setTextPositionListener(null);
@@ -172,17 +177,34 @@ export default function Editor() {
                             })}>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="text">Text</Label>
-                                        <Input {...register("text")} id="text" placeholder="Sample Text" required type="text" />
+                                        <Controller
+                                            control={control}
+                                            name="text"
+                                            render={({ field }) => {
+                                                return <input {...field} placeholder={"Sample Text"} required type={"text"} /> // ✅
+                                            }}
+                                        />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="fontSize">Font Size</Label>
-                                        <Input {...register("fontSize")} id="fontSize" placeholder="Enter size in px" required type="number" />
+                                        <Controller
+                                            control={control}
+                                            name="fontSize"
+                                            render={({ field }) => {
+                                                return (
+                                                    <input
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                                        placeholder={"(Optional) Font size in px"}
+                                                        type={"number"}
+                                                    />
+                                                );
+                                            }}
+                                        />
                                     </div>
                                     <div className="flex gap-x-4">
                                         <HexColorPicker color={textColor} onChange={setTextColor} />
                                         <div className="flex w-full h-full justify-center align-center">
-                                            <div className={"w-full h-full"} style={{color: textColor}}>{data?.text ?? "Sample Text"}</div>
+                                            <div className={"w-full h-full"} style={{color: textColor, fontSize: watch("fontSize")}}>{watch("text")}</div>
                                         </div>
                                     </div>
                                     <Button className="w-full" onClick={(e) => {
@@ -197,7 +219,7 @@ export default function Editor() {
                 </DialogContent>
             </Dialog>
             {isApplyingText ? (
-                <div ref={followDivRef} style={{fontSize: `${data?.fontSize ?? 40}px`}} className={`absolute top-0 left-0 pointer-events-none`}>{data?.text}</div>
+                <div ref={followDivRef} style={{fontSize: `${watch("fontSize")}px`, color: textColor}} className={`absolute top-0 left-0 pointer-events-none`}>{watch("text")}</div>
             ) : null}
         </div>
         ) : (

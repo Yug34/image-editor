@@ -1,4 +1,8 @@
-export const FONTFACES = [
+export type FontFace = {
+    display: string;
+    file: string;
+}
+export const FONTFACES: FontFace[] = [
     {
         display: "OpenSans Bold",
         file: "OpenSans-Bold.ttf"
