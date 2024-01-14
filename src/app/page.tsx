@@ -20,7 +20,9 @@ export default function Home() {
 
     return (
         <>
-            <ThemeToggler/>
+            <div className={"w-full h-20 flex justify-end items-center"}>
+                <ThemeToggler/>
+            </div>
             {
                 isLoggedIn ? (
                     <Editor/>

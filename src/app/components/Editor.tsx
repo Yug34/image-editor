@@ -15,7 +15,14 @@ import {
 import {Controller, FieldValues, useForm} from "react-hook-form";
 import {HexColorPicker} from "react-colorful";
 import {FONTFACES} from "@/constants";
-import {ThemeToggler} from "@/app/components/ThemeToggler";
+import {Input} from "@/components/ui/input";
+import {
+    Select,
+    SelectContent, SelectGroup,
+    SelectItem, SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -34,7 +41,7 @@ export default function Editor() {
     const {handleSubmit, getValues, control, watch} = useForm({
         mode: "onChange",
         defaultValues: {
-            text: "Sample Data",
+            text: "Sample Text",
             fontSize: 24,
             fontFile: "OpenSans-LightItalic.ttf"
         }
@@ -58,7 +65,7 @@ export default function Editor() {
             const y = e ? e.clientY : event.clientY;
 
             if (followDivRef.current) {
-                followDivRef.current.style.top = `${y}px`;
+                followDivRef.current.style.top = `${y - 8}px`;
                 followDivRef.current.style.left = `${x}px`;
             }
         }
@@ -85,7 +92,7 @@ export default function Editor() {
                 await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`http://localhost:3000/fonts/${watch("fontFile")}`));
             }
 
-            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize") ?? 40}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
+            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
 
             window.removeEventListener("mousemove", textPositionListener!, false);
             setTextPositionListener(null);
@@ -95,12 +102,18 @@ export default function Editor() {
         }
     }
 
+    const addBorderToImage = async () => {
+        const ffmpeg = ffmpegRef.current;
+        await ffmpeg.exec(`-i input.${imageFormat} -vf "pad=50+iw:50+ih:25:25" output.${imageFormat}`.split(" "));
+        await cleanUp();
+    }
+
     useEffect(() => {
         load();
     }, []);
 
     const load = async () => {
-        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
         const ffmpeg = ffmpegRef.current;
 
         ffmpeg.on('log', ({message}) => {
@@ -135,8 +148,6 @@ export default function Editor() {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
             setSourceImageURL(imageURL);
         });
-
-        console.log(await ffmpeg.listDir("/"));
 
         setImage(fileData);
     }
@@ -191,7 +202,7 @@ export default function Editor() {
                                             control={control}
                                             name="text"
                                             render={({ field }) => {
-                                                return <input {...field} placeholder={"Sample Text"} required type={"text"} />
+                                                return <Input {...field} placeholder={"Sample Text"} required type={"text"} />
                                             }}
                                         />
                                     </div>
@@ -201,10 +212,11 @@ export default function Editor() {
                                             name="fontSize"
                                             render={({ field }) => {
                                                 return (
-                                                    <input
+                                                    <Input
                                                         {...field}
                                                         onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                                        placeholder={"(Optional) Font size in px"}
+                                                        required
+                                                        placeholder={"Font size in px"}
                                                         type={"number"}
                                                     />
                                                 );
@@ -226,11 +238,9 @@ export default function Editor() {
                                             }}
                                         />
                                     </div>
-                                    <div className="flex gap-x-4">
+                                    <div className="flex flex-col gap-y-4 colorPickerParent">
+                                        <div className="w-full h-full" style={{color: textColor, fontSize: watch("fontSize")}}>{watch("text")}</div>
                                         <HexColorPicker color={textColor} onChange={setTextColor} />
-                                        <div className="flex w-full h-full justify-center align-center">
-                                            <div className={"w-full h-full"} style={{color: textColor, fontSize: watch("fontSize")}}>{watch("text")}</div>
-                                        </div>
                                     </div>
                                     <Button className="w-full" onClick={(e) => {
                                         handleTextApplyClick(e);
