@@ -6,7 +6,7 @@ import {Label} from "@/components/ui/label"
 import {Input} from "@/components/ui/input"
 import {Button} from "@/components/ui/button"
 import {redirect} from "next/navigation";
-import Editor from "@/app/components/Editor";
+import Index from "@/app/components/Editor";
 import {ThemeToggler} from "@/app/components/ThemeToggler";
 import {Navbar} from "@/app/components/Navbar";
 
@@ -23,7 +23,7 @@ export default function Home() {
         <div className={"flex flex-col h-screen w-screen items-center justify-center"}>
             <Navbar/>
             {isLoggedIn ?
-                <Editor/>
+                <Index/>
                 :
                 <Card className="mx-auto max-w-sm">
                     <CardHeader className="space-y-1">
