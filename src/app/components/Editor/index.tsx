@@ -25,7 +25,7 @@ import {TextDialog} from "@/app/components/Editor/TextDialog";
 import {FONTFACES} from "@/constants";
 
 const fetchFileBaseUrl = () => {
-    return process.env.NODE_ENV === "development" ? "http://localhost:3000" : process.env.VERCEL_DEPLOYMENT_URL
+    return process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"
 }
 
 export default function Index() {
@@ -117,8 +117,6 @@ export default function Index() {
     }
 
     useEffect(() => {
-        console.log(fetchFileBaseUrl());
-
         (async () => {
             await load();
             const ffmpeg = ffmpegRef.current;
