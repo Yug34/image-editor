@@ -122,7 +122,9 @@ export default function Index() {
             const ffmpeg = ffmpegRef.current;
             await Promise.all(FONTFACES.map(async fontFace => {
                 await ffmpeg.writeFile(fontFace.file, await fetchFile(`${fetchFileBaseUrl()}/fonts/${fontFace.file}`))
-            }))
+            })).then(async () => {
+                console.log(await ffmpeg.listDir("/"));
+            })
         })()
     }, []);
 
