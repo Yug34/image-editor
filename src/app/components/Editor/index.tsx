@@ -52,8 +52,12 @@ export default function Index() {
         setPrevSourceImageURLs(prevState => [...prevState,newURL] );
     }
 
-    const removeURLFromPrevList = () => {
+    const removeURLFromPrevList = async () => {
         if (prevSourceImageURLs.length > 1) {
+            const ffmpeg = ffmpegRef.current;
+            await ffmpeg.deleteFile(`input.${imageFormat}`);
+            await ffmpeg.writeFile(`input.${imageFormat}`, await fetchFile(prevSourceImageURLs[prevSourceImageURLs.length - 2]));
+
             setPrevSourceImageURLs(previousArr => (previousArr.slice(0, -1)));
         }
     }
