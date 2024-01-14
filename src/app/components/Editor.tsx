@@ -12,19 +12,17 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {Controller, FieldValues, useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {HexColorPicker} from "react-colorful";
 import {FONTFACES} from "@/constants";
 import {Input} from "@/components/ui/input";
-import {
-    Select,
-    SelectContent, SelectGroup,
-    SelectItem, SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {Label} from "@/components/ui/label";
-import {Heading} from "lucide-react";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -176,109 +174,117 @@ export default function Editor() {
     return (isLoaded && image) ? (
         <div className={"flex flex-col w-full h-full justify-center items-center"}>
             <p ref={messageRef}></p>
-            <img
-                ref={imageRef}
-                src={sourceImageURL!}
-                alt={"Image to Edit"}
-                onClick={async (e) => {
-                    await applyTextToImage(e);
-                }}
-            />
-            <div className={"flex gap-x-8 mt-8"}>
-                <Button onClick={greyScale}>Greyscale Image</Button>
-                <Dialog
-                    open={isBorderDialogOpen}
-                    onOpenChange={setIsBorderDialogOpen}
-                >
-                    <DialogTrigger asChild>
-                        <Button>Add border</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle>Add border to image</DialogTitle>
-                            <DialogDescription>
-                                Select border color and width.
-                            </DialogDescription>
-                        </DialogHeader>
-                    </DialogContent>
-                </Dialog>
-                <Dialog open={isTextDialogOpen} onOpenChange={setIsTextDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>Add text</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle>Add text to image</DialogTitle>
-                            <DialogDescription>
-                                Select text color, change text, select fonts.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="flex items-center space-x-2">
-                            <div className="grid flex-1 gap-2">
-                                <form onSubmit={(e) => {
-                                    e.preventDefault();
-                                }}>
-                                    <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Controller
-                                                control={control}
-                                                name="text"
-                                                render={({field}) => {
-                                                    return <Input {...field} placeholder={"Sample Text"} required
-                                                                  type={"text"}/>
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Controller
-                                                control={control}
-                                                name="fontSize"
-                                                render={({field}) => {
-                                                    return (
-                                                        <Input
-                                                            {...field}
-                                                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                                            required
-                                                            placeholder={"Font size in px"}
-                                                            type={"number"}
-                                                        />
-                                                    );
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Controller
-                                                control={control}
-                                                name="fontFile"
-                                                render={({field}) => {
-                                                    return (
-                                                        <select {...field}>
-                                                            {FONTFACES.map((fontFace) => (
-                                                                <option key={fontFace.display}
-                                                                        value={fontFace.file}>{fontFace.display}</option>
-                                                            ))}
-                                                        </select>
-                                                    );
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-y-4 colorPickerParent">
-                                            <div
-                                                className="rounded-md px-2 w-full h-full border bg-card text-card-foreground shadow-sm mb-4"
-                                                style={{color: textColor, fontSize: watch("fontSize")}}>{watch("text")}</div>
-                                            <HexColorPicker color={textColor} onChange={setTextColor}/>
-                                        </div>
-                                        <Button className="w-full" onClick={(e) => {
-                                            handleTextApplyClick(e);
+            <Card className={"p-0"}>
+                <CardHeader className={"p-0"}>
+                    <CardTitle className={"flex mb-4 border-b"}>
+                        <Button className={"rounded-none rounded-tl-lg border-none"} variant={"outline"} onClick={greyScale}>Greyscale Image</Button>
+                        <Dialog
+                            open={isBorderDialogOpen}
+                            onOpenChange={setIsBorderDialogOpen}
+                        >
+                            <DialogTrigger asChild>
+                                <Button className={"rounded-none border-y-0 border-r-0 border-l"} variant={"outline"}>Add border</Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Add border to image</DialogTitle>
+                                    <DialogDescription>
+                                        Select border color and width.
+                                    </DialogDescription>
+                                </DialogHeader>
+                            </DialogContent>
+                        </Dialog>
+                        <Dialog open={isTextDialogOpen} onOpenChange={setIsTextDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button className={"rounded-none border-y-0"} variant={"outline"}>Add text</Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Add text to image</DialogTitle>
+                                    <DialogDescription>
+                                        Select text color, change text, select fonts.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex items-center space-x-2">
+                                    <div className="grid flex-1 gap-2">
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
                                         }}>
-                                            Apply Text to image
-                                        </Button>
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Controller
+                                                        control={control}
+                                                        name="text"
+                                                        render={({field}) => {
+                                                            return <Input {...field} placeholder={"Sample Text"} required
+                                                                          type={"text"}/>
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Controller
+                                                        control={control}
+                                                        name="fontSize"
+                                                        render={({field}) => {
+                                                            return (
+                                                                <Input
+                                                                    {...field}
+                                                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                                                    required
+                                                                    placeholder={"Font size in px"}
+                                                                    type={"number"}
+                                                                />
+                                                            );
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Controller
+                                                        control={control}
+                                                        name="fontFile"
+                                                        render={({field}) => {
+                                                            return (
+                                                                <select {...field}>
+                                                                    {FONTFACES.map((fontFace) => (
+                                                                        <option key={fontFace.display}
+                                                                                value={fontFace.file}>{fontFace.display}</option>
+                                                                    ))}
+                                                                </select>
+                                                            );
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-y-4 colorPickerParent">
+                                                    <div
+                                                        className="rounded-md px-2 w-full h-full border bg-card text-card-foreground shadow-sm mb-4"
+                                                        style={{color: textColor, fontSize: watch("fontSize")}}>{watch("text")}</div>
+                                                    <HexColorPicker color={textColor} onChange={setTextColor}/>
+                                                </div>
+                                                <Button className="w-full" onClick={(e) => {
+                                                    handleTextApplyClick(e);
+                                                }}>
+                                                    Apply Text to image
+                                                </Button>
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
-                            </div>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <img
+                        ref={imageRef}
+                        src={sourceImageURL!}
+                        alt={"Image to Edit"}
+                        onClick={async (e) => {
+                            await applyTextToImage(e);
+                        }}
+                    />
+                </CardContent>
+            </Card>
+            <div className={"flex gap-x-8 mt-8"}>
             </div>
             {isApplyingText ? (
                 <div ref={followDivRef} style={{fontSize: `${watch("fontSize")}px`, color: textColor}}
