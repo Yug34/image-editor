@@ -64,6 +64,7 @@ export default function Index() {
         setIsTextDialogOpen(false);
         setIsApplyingText(true);
 
+        //@ts-ignore
         const textPositionListener = (e) => {
             const x = e ? e.clientX : event.clientX;
             const y = e ? e.clientY : event.clientY;
@@ -215,6 +216,7 @@ export default function Index() {
                         src={sourceImageURL!}
                         alt={"Image to Edit"}
                         onClick={async (e) => {
+                            //@ts-ignore
                             await applyTextToImage(e);
                         }}
                     />

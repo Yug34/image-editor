@@ -44,16 +44,24 @@ export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text
                         }}>
                             <div className="space-y-4">
                                 <div className="space-y-2">
+                                    <DialogDescription>Text to Add</DialogDescription>
                                     <Controller
                                         control={control}
                                         name="text"
                                         render={({field}) => {
-                                            return <Input {...field} placeholder={"Sample Text"} required
-                                                          type={"text"}/>
+                                            return (
+                                                <Input
+                                                    {...field}
+                                                    placeholder={"Sample Text"}
+                                                    required
+                                                    type={"text"}
+                                                />
+                                            );
                                         }}
                                     />
                                 </div>
                                 <div className="space-y-2">
+                                    <DialogDescription>Font Size</DialogDescription>
                                     <Controller
                                         control={control}
                                         name="fontSize"
@@ -87,15 +95,19 @@ export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text
                                     />
                                 </div>
                                 <div className="flex flex-col gap-y-4 colorPickerParent">
-                                    <div
-                                        className="rounded-md px-2 w-full h-full border bg-card text-card-foreground shadow-sm mb-4"
-                                        style={{color: textColor, fontSize: fontSize}}
-                                    >
-                                        {text}
+                                    <div className={"flex flex-col gap-y-2"}>
+                                        <DialogDescription>Text Preview</DialogDescription>
+                                        <div
+                                            className="rounded-md px-2 w-full h-full border bg-card text-card-foreground shadow-sm mb-4"
+                                            style={{color: textColor, fontSize: fontSize}}
+                                        >
+                                            {text}
+                                        </div>
                                     </div>
                                     <HexColorPicker color={textColor} onChange={setTextColor}/>
                                 </div>
                                 <Button className="w-full" onClick={(e) => {
+                                    //@ts-ignore
                                     handleTextApplyClick(e);
                                 }}>
                                     Apply Text to image
