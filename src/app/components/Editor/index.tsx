@@ -24,10 +24,6 @@ import {
 import {TextDialog} from "@/app/components/Editor/TextDialog";
 import {FONTFACES} from "@/constants";
 
-const fetchFileBaseUrl = () => {
-    return process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"
-}
-
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const messageRef = useRef<HTMLParagraphElement>(null);
@@ -96,10 +92,6 @@ export default function Index() {
 
             const ffmpeg = ffmpegRef.current;
 
-            if (!await isFontLoaded(watch("fontFile"))) {
-                await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`${fetchFileBaseUrl()}/fonts/${watch("fontFile")}`));
-            }
-
             await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
 
             window.removeEventListener("mousemove", textPositionListener!, false);
@@ -117,11 +109,13 @@ export default function Index() {
     }
 
     useEffect(() => {
+        console.log(process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app");
+
         (async () => {
             await load();
             const ffmpeg = ffmpegRef.current;
             await Promise.all(FONTFACES.map(async fontFace => {
-                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${fetchFileBaseUrl()}/fonts/${fontFace.file}`))
+                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"}/fonts/${fontFace.file}`));
             })).then(async () => {
                 console.log(await ffmpeg.listDir("/"));
             })
@@ -157,8 +151,6 @@ export default function Index() {
         const ffmpeg = ffmpegRef.current;
 
         await ffmpeg.writeFile(`input.${format}`, fileData);
-
-        await ffmpeg.writeFile("OpenSans-Regular.ttf", await fetchFile(`${fetchFileBaseUrl()}/fonts/OpenSans-Regular.ttf`));
 
         ffmpeg.readFile(`input.${format}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
