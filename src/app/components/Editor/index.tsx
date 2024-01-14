@@ -38,6 +38,26 @@ export default function Index() {
     const [image, setImage] = useState<Uint8Array | null>(null);
     // URL to image Byte Array stored locally
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
+    const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
+
+    useEffect(() => {
+        console.log("Effect runs")
+        if (prevSourceImageURLs.length > 0) {
+            console.log("Effect runs inner")
+            setSourceImageURL(prevSourceImageURLs[prevSourceImageURLs.length - 1]);
+        }
+    }, [prevSourceImageURLs]);
+
+    const addURLToPrevList = (newURL: string) => {
+        setPrevSourceImageURLs(prevState => [...prevState,newURL] );
+    }
+
+    const removeURLFromPrevList = () => {
+        if (prevSourceImageURLs.length > 1) {
+            setPrevSourceImageURLs(previousArr => (previousArr.slice(0, -1)));
+        }
+    }
+
     const [imageFormat, setImageFormat] = useState<string | null>(null);
 
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
@@ -167,7 +187,7 @@ export default function Index() {
 
         ffmpeg.readFile(`input.${format}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
-            setSourceImageURL(imageURL);
+            addURLToPrevList(imageURL);
         });
 
         setImage(fileData);
@@ -177,7 +197,7 @@ export default function Index() {
         const ffmpeg = ffmpegRef.current;
         const data = await ffmpeg.readFile(`output.${imageFormat}`);
         const imageURL = URL.createObjectURL(new Blob([data], {type: `image/${imageFormat}`}));
-        setSourceImageURL(imageURL);
+        addURLToPrevList(imageURL);
         await ffmpeg.deleteFile(`input.${imageFormat}`);
         await ffmpeg.rename(`output.${imageFormat}`, `input.${imageFormat}`);
     }
@@ -219,6 +239,12 @@ export default function Index() {
                             fontSize={watch("fontSize")}
                             handleTextApplyClick={handleTextApplyClick}
                         />
+                        <Button
+                            onClick={removeURLFromPrevList}
+                            variant={"outline"}
+                        >
+                            Undo
+                        </Button>
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
                             variant={"outline"}
