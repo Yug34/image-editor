@@ -3,6 +3,7 @@ import {ChangeEvent, useEffect, useRef, useState} from "react";
 import {FFmpeg} from "@ffmpeg/ffmpeg";
 import {fetchFile, toBlobURL} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
+import { DownloadIcon } from "@radix-ui/react-icons"
 
 import {
     Dialog,
@@ -59,6 +60,17 @@ export default function Index() {
     const [isTextDialogOpen, setIsTextDialogOpen] = useState<boolean>(false);
     const [isBorderDialogOpen, setIsBorderDialogOpen] = useState<boolean>(false);
 
+    const downloadImage = () => {
+        const link = document.createElement("a");
+        link.download = `output.${imageFormat}`;
+        link.target = "_blank";
+
+        link.href = sourceImageURL!;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const handleTextApplyClick = (event: MouseEvent) => {
         setIsTextDialogOpen(false);
         setIsApplyingText(true);
@@ -76,12 +88,6 @@ export default function Index() {
 
         window.addEventListener("mousemove", textPositionListener, false);
         setTextPositionListener(textPositionListener);
-    }
-
-    const isFontLoaded = async (fontToCheck: string) => {
-        const ffmpeg = ffmpegRef.current;
-        const directories = await ffmpeg.listDir("/")
-        return directories.filter((dir) => dir.name === fontToCheck).length === 1;
     }
 
     const applyTextToImage = async (e: MouseEvent) => {
@@ -109,20 +115,17 @@ export default function Index() {
     }
 
     useEffect(() => {
-        console.log(process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app");
-
         (async () => {
             await load();
             const ffmpeg = ffmpegRef.current;
             await Promise.all(FONTFACES.map(async fontFace => {
                 await ffmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"}/fonts/${fontFace.file}`));
-            })).then(async () => {
-                console.log(await ffmpeg.listDir("/"));
-            })
-        })()
+            }));
+        })();
     }, []);
 
     const load = async () => {
+        // FFmpeg.wasm base URL:
         const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
         const ffmpeg = ffmpegRef.current;
 
@@ -164,10 +167,9 @@ export default function Index() {
         const ffmpeg = ffmpegRef.current;
         const data = await ffmpeg.readFile(`output.${imageFormat}`);
         const imageURL = URL.createObjectURL(new Blob([data], {type: `image/${imageFormat}`}));
-        await ffmpeg.listDir("/");
+        setSourceImageURL(imageURL);
         await ffmpeg.deleteFile(`input.${imageFormat}`);
         await ffmpeg.rename(`output.${imageFormat}`, `input.${imageFormat}`);
-        setSourceImageURL(imageURL);
     }
 
     const greyScale = async () => {
@@ -211,6 +213,14 @@ export default function Index() {
                             fontSize={watch("fontSize")}
                             handleTextApplyClick={handleTextApplyClick}
                         />
+                        <Button
+                            className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
+                            variant={"outline"}
+                            onClick={downloadImage}
+                        >
+                            Download Image
+                            <DownloadIcon className={"ml-2"} />
+                        </Button>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
