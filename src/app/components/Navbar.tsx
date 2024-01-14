@@ -55,7 +55,7 @@ const components: { title: string; href: string; description: string }[] = [
 
 export function Navbar() {
     return (
-        <NavigationMenu className={"max-w-full w-full"}>
+        <NavigationMenu className={"absolute top-0 left-0 max-w-full w-full border-b-2 bg-card text-card-foreground shadow-sm mb-10"}>
             <div className={"flex max-w-full w-full justify-end items-end"}>
                 <a
                     rel={"noreferrer"}
