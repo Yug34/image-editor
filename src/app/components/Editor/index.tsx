@@ -12,9 +12,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {Controller, useForm} from "react-hook-form";
-import {HexColorPicker} from "react-colorful";
-import {FONTFACES} from "@/constants";
+import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {
@@ -94,7 +92,7 @@ export default function Index() {
             const ffmpeg = ffmpegRef.current;
 
             if (!await isFontLoaded(watch("fontFile"))) {
-                await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`http://localhost:3000/fonts/${watch("fontFile")}`));
+                await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`${process.env.VERCEL_URL ?? "http://localhost:3000"}/fonts/${watch("fontFile")}`));
             }
 
             await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
@@ -114,6 +112,8 @@ export default function Index() {
     }
 
     useEffect(() => {
+        console.log(process.env.VERCEL_URL)
+
         load();
     }, []);
 
