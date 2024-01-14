@@ -22,6 +22,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import {TextDialog} from "@/app/components/Editor/TextDialog";
+import {FONTFACES} from "@/constants";
 
 const fetchFileBaseUrl = () => {
     return process.env.NODE_ENV === "development" ? "http://localhost:3000" : process.env.VERCEL_DEPLOYMENT_URL
@@ -116,9 +117,13 @@ export default function Index() {
     }
 
     useEffect(() => {
-        console.log(process.env.VERCEL_DEPLOYMENT_URL)
-
-        load();
+        (async () => {
+            await load();
+            const ffmpeg = ffmpegRef.current;
+            await Promise.all(FONTFACES.map(async fontFace => {
+                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${fetchFileBaseUrl()}/fonts/${fontFace.file}`))
+            }))
+        })()
     }, []);
 
     const load = async () => {
