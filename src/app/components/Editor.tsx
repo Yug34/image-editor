@@ -15,6 +15,7 @@ import {
 import {Controller, FieldValues, useForm} from "react-hook-form";
 import {HexColorPicker} from "react-colorful";
 import {FONTFACES} from "@/constants";
+import {ThemeToggler} from "@/app/components/ThemeToggler";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
