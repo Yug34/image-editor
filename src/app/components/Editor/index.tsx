@@ -3,17 +3,9 @@ import {ChangeEvent, useEffect, useRef, useState} from "react";
 import {FFmpeg} from "@ffmpeg/ffmpeg";
 import {fetchFile, toBlobURL} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
-import { DownloadIcon } from "@radix-ui/react-icons"
+import {DownloadIcon, ResetIcon, TransparencyGridIcon} from "@radix-ui/react-icons"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import {Controller, useForm} from "react-hook-form";
+import {useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {
@@ -24,7 +16,6 @@ import {
 } from "@/components/ui/card"
 import {TextDialog} from "@/app/components/Editor/TextDialog";
 import {FONTFACES} from "@/constants";
-import {HexColorPicker} from "react-colorful";
 import {BorderDialog} from "@/app/components/Editor/BorderDialog";
 
 export default function Index() {
@@ -49,7 +40,7 @@ export default function Index() {
     }, [prevSourceImageURLs]);
 
     const addURLToPrevList = (newURL: string) => {
-        setPrevSourceImageURLs(prevState => [...prevState,newURL] );
+        setPrevSourceImageURLs(prevState => [...prevState, newURL]);
     }
 
     const removeURLFromPrevList = async () => {
@@ -220,10 +211,10 @@ export default function Index() {
                     <CardTitle className={"flex mb-4 border-b"}>
                         <Button
                             className={"rounded-none rounded-tl-lg border-none"}
-                            variant={"outline"}
-                            onClick={greyScale}
+                            variant={"outline"} onClick={greyScale}
                         >
                             Greyscale Image
+                            <TransparencyGridIcon className={"ml-2"}/>
                         </Button>
                         <BorderDialog
                             isBorderDialogOpen={isBorderDialogOpen}
@@ -244,18 +235,20 @@ export default function Index() {
                             handleTextApplyClick={handleTextApplyClick}
                         />
                         <Button
+                            className={"rounded-none border-y-0"}
                             onClick={removeURLFromPrevList}
                             variant={"outline"}
                         >
                             Undo
+                            <ResetIcon className={"ml-2"}/>
                         </Button>
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
-                            variant={"outline"}
                             onClick={downloadImage}
+                            variant={"outline"}
                         >
                             Download Image
-                            <DownloadIcon className={"ml-2"} />
+                            <DownloadIcon className={"ml-2"}/>
                         </Button>
                     </CardTitle>
                 </CardHeader>

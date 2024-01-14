@@ -11,6 +11,7 @@ import {Control, Controller} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {HexColorPicker} from "react-colorful";
 import {Dispatch, SetStateAction} from "react";
+import { BorderAllIcon } from "@radix-ui/react-icons";
 
 interface BorderDialogProps {
     isBorderDialogOpen: boolean;
@@ -35,7 +36,10 @@ export const BorderDialog = ({
             onOpenChange={setIsBorderDialogOpen}
         >
             <DialogTrigger asChild>
-                <Button className={"rounded-none border-y-0 border-r-0 border-l"} variant={"outline"}>Add border</Button>
+                <Button className={"rounded-none border-y-0 border-r-0 border-l"} variant={"outline"}>
+                    Add border
+                    <BorderAllIcon className={"ml-2"}/>
+                </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>

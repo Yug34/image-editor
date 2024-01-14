@@ -12,6 +12,7 @@ import {Input} from "@/components/ui/input";
 import {FONTFACES} from "@/constants";
 import {HexColorPicker} from "react-colorful";
 import {Dispatch, SetStateAction} from "react";
+import {TextIcon} from "@radix-ui/react-icons"
 
 interface TextDialogProps {
     isTextDialogOpen: boolean;
@@ -28,7 +29,10 @@ export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text
     return (
         <Dialog open={isTextDialogOpen} onOpenChange={setIsTextDialogOpen}>
             <DialogTrigger asChild>
-                <Button className={"rounded-none border-y-0"} variant={"outline"}>Add text</Button>
+                <Button className={"rounded-none border-y-0"} variant={"outline"}>
+                    Add text
+                    <TextIcon className={"ml-2"}/>
+                </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
