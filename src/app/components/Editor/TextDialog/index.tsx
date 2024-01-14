@@ -72,6 +72,7 @@ export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text
                                                     onChange={(e) => field.onChange(parseInt(e.target.value))}
                                                     required
                                                     placeholder={"Font size in px"}
+                                                    min={10}
                                                     type={"number"}
                                                 />
                                             );

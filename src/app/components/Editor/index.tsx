@@ -13,7 +13,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import {useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/card"
 import {TextDialog} from "@/app/components/Editor/TextDialog";
 import {FONTFACES} from "@/constants";
+import {HexColorPicker} from "react-colorful";
+import {BorderDialog} from "@/app/components/Editor/BorderDialog";
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -41,6 +43,7 @@ export default function Index() {
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const ffmpegRef = useRef(new FFmpeg());
     const [textColor, setTextColor] = useState("#00ff00");
+    const [borderColor, setBorderColor] = useState("#00ff00");
 
     const {control, watch} = useForm({
         mode: "onChange",
@@ -48,6 +51,13 @@ export default function Index() {
             text: "Sample Text",
             fontSize: 24,
             fontFile: "OpenSans-Regular.ttf"
+        }
+    });
+
+    const {control: borderControl, watch: borderWatch} = useForm({
+        mode: "onChange",
+        defaultValues: {
+            borderSize: 20
         }
     });
 
@@ -110,7 +120,7 @@ export default function Index() {
 
     const addBorderToImage = async () => {
         const ffmpeg = ffmpegRef.current;
-        await ffmpeg.exec(`-i input.${imageFormat} -vf "pad=50+iw:50+ih:25:25" output.${imageFormat}`.split(" "));
+        await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `pad=${borderWatch("borderSize") * 2}+iw:${borderWatch("borderSize") * 2}+ih:${borderWatch("borderSize")}:${borderWatch("borderSize")}:${borderColor}`, `output.${imageFormat}`]);
         await cleanUp();
     }
 
@@ -184,25 +194,21 @@ export default function Index() {
             <Card className={"p-0"}>
                 <CardHeader className={"p-0"}>
                     <CardTitle className={"flex mb-4 border-b"}>
-                        <Button className={"rounded-none rounded-tl-lg border-none"} variant={"outline"}
-                                onClick={greyScale}>Greyscale Image</Button>
-                        <Dialog
-                            open={isBorderDialogOpen}
-                            onOpenChange={setIsBorderDialogOpen}
+                        <Button
+                            className={"rounded-none rounded-tl-lg border-none"}
+                            variant={"outline"}
+                            onClick={greyScale}
                         >
-                            <DialogTrigger asChild>
-                                <Button className={"rounded-none border-y-0 border-r-0 border-l"} variant={"outline"}>Add
-                                    border</Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
-                                <DialogHeader>
-                                    <DialogTitle>Add border to image</DialogTitle>
-                                    <DialogDescription>
-                                        Select border color and width.
-                                    </DialogDescription>
-                                </DialogHeader>
-                            </DialogContent>
-                        </Dialog>
+                            Greyscale Image
+                        </Button>
+                        <BorderDialog
+                            isBorderDialogOpen={isBorderDialogOpen}
+                            setIsBorderDialogOpen={setIsBorderDialogOpen}
+                            borderControl={borderControl}
+                            borderColor={borderColor}
+                            setBorderColor={setBorderColor}
+                            addBorderToImage={addBorderToImage}
+                        />
                         <TextDialog
                             isTextDialogOpen={isTextDialogOpen}
                             setIsTextDialogOpen={setIsTextDialogOpen}
@@ -238,8 +244,13 @@ export default function Index() {
             <div className={"flex gap-x-8 mt-8"}>
             </div>
             {isApplyingText ? (
-                <div ref={followDivRef} style={{fontSize: `${watch("fontSize")}px`, color: textColor}}
-                     className={`absolute top-0 left-0 pointer-events-none`}>{watch("text")}</div>
+                <div
+                    ref={followDivRef}
+                    style={{fontSize: `${watch("fontSize")}px`, color: textColor}}
+                    className={`absolute top-0 left-0 pointer-events-none`}
+                >
+                    {watch("text")}
+                </div>
             ) : null}
         </div>
     ) : (
