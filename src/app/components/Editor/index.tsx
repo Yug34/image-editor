@@ -23,6 +23,10 @@ import {
 } from "@/components/ui/card"
 import {TextDialog} from "@/app/components/Editor/TextDialog";
 
+const fetchFileBaseUrl = () => {
+    return process.env.NODE_ENV === "development" ? "http://localhost:3000" : process.env.VERCEL_DEPLOYMENT_URL
+}
+
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const messageRef = useRef<HTMLParagraphElement>(null);
@@ -92,7 +96,7 @@ export default function Index() {
             const ffmpeg = ffmpegRef.current;
 
             if (!await isFontLoaded(watch("fontFile"))) {
-                await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`${process.env.VERCEL_URL ?? "http://localhost:3000"}/fonts/${watch("fontFile")}`));
+                await ffmpeg.writeFile(watch("fontFile"), await fetchFile(`${fetchFileBaseUrl()}/fonts/${watch("fontFile")}`));
             }
 
             await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
@@ -112,7 +116,7 @@ export default function Index() {
     }
 
     useEffect(() => {
-        console.log(process.env.VERCEL_URL)
+        console.log(process.env.VERCEL_DEPLOYMENT_URL)
 
         load();
     }, []);
@@ -147,7 +151,7 @@ export default function Index() {
 
         await ffmpeg.writeFile(`input.${format}`, fileData);
 
-        await ffmpeg.writeFile("OpenSans-Regular.ttf", await fetchFile("http://localhost:3000/fonts/OpenSans-Regular.ttf"));
+        await ffmpeg.writeFile("OpenSans-Regular.ttf", await fetchFile(`${fetchFileBaseUrl()}/fonts/OpenSans-Regular.ttf`));
 
         ffmpeg.readFile(`input.${format}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
