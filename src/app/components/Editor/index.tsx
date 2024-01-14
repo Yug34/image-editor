@@ -117,6 +117,8 @@ export default function Index() {
     }
 
     useEffect(() => {
+        console.log(fetchFileBaseUrl());
+
         (async () => {
             await load();
             const ffmpeg = ffmpegRef.current;
