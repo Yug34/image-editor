@@ -6,8 +6,6 @@ import {Button} from "@/components/ui/button";
 import {DownloadIcon, ResetIcon, TransparencyGridIcon} from "@radix-ui/react-icons"
 
 import {useForm} from "react-hook-form";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
 import {
     Card,
     CardContent,
@@ -17,6 +15,7 @@ import {
 import {TextDialog} from "@/app/components/Editor/TextDialog";
 import {FONTFACES} from "@/constants";
 import {BorderDialog} from "@/app/components/Editor/BorderDialog";
+import ImageUpload from "@/app/components/ImageUpload";
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -24,17 +23,15 @@ export default function Index() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // TODO:
-    // const [loaded, setLoaded] = useState(false);
     // Store image data as a Byte Array
     const [image, setImage] = useState<Uint8Array | null>(null);
     // URL to image Byte Array stored locally
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
     const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
-        console.log("Effect runs")
         if (prevSourceImageURLs.length > 0) {
-            console.log("Effect runs inner")
             setSourceImageURL(prevSourceImageURLs[prevSourceImageURLs.length - 1]);
         }
     }, [prevSourceImageURLs]);
@@ -55,7 +52,7 @@ export default function Index() {
 
     const [imageFormat, setImageFormat] = useState<string | null>(null);
 
-    const [isLoaded, setIsLoaded] = useState<boolean>(false);
+    const [isFFmpegLoaded, setIsFFmpegLoaded] = useState<boolean>(false);
     const ffmpegRef = useRef(new FFmpeg());
     const [textColor, setTextColor] = useState("#00ff00");
     const [borderColor, setBorderColor] = useState("#00ff00");
@@ -165,7 +162,7 @@ export default function Index() {
             wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
         });
 
-        setIsLoaded(true);
+        setIsFFmpegLoaded(true);
     }
 
 
@@ -203,7 +200,7 @@ export default function Index() {
         await cleanUp();
     }
 
-    return (isLoaded && image) ? (
+    return (isFFmpegLoaded && image) ? (
         <div className={"flex flex-col w-full h-full justify-center items-center"}>
             <p ref={messageRef}></p>
             <Card className={"p-0"}>
@@ -254,6 +251,7 @@ export default function Index() {
                 </CardHeader>
                 <CardContent>
                     <img
+                        className={"max-w-[70vw] max-h-[70vh]"}
                         ref={imageRef}
                         src={sourceImageURL!}
                         alt={"Image to Edit"}
@@ -278,16 +276,14 @@ export default function Index() {
         </div>
     ) : (
         <div className={"flex flex-col h-full justify-center items-start"}>
-            <Label htmlFor="file-upload" className={"mb-4 ml-2"}>
-                {image ? "Loading ffmpeg" : "Add an image to start"}
-            </Label>
-            <Input
-                // style={{display: "none"}}
-                className={"w-[300px]"}
-                id="file-upload"
-                type="file"
-                ref={fileInputRef}
-                onChange={initialize}
+            <ImageUpload
+                fileInputRef={fileInputRef}
+                prevSourceImageURLs={prevSourceImageURLs}
+                setPrevSourceImageURLs={setPrevSourceImageURLs}
+                handleChange={initialize}
+                sourceImageURL={sourceImageURL}
+                loaded={loaded}
+                setLoaded={setLoaded}
             />
         </div>
     )

@@ -5,9 +5,7 @@ import {CardTitle, CardDescription, CardHeader, CardContent, Card} from "@/compo
 import {Label} from "@/components/ui/label"
 import {Input} from "@/components/ui/input"
 import {Button} from "@/components/ui/button"
-import {redirect} from "next/navigation";
 import Index from "@/app/components/Editor";
-import {ThemeToggler} from "@/app/components/ThemeToggler";
 import {Navbar} from "@/app/components/Navbar";
 
 export default function Home() {
@@ -31,28 +29,30 @@ export default function Home() {
                         <CardDescription>Enter your email and password to login to your account</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {/*<form onSubmit={handleSubmit((data) => {*/}
-                        {/*    setData(data);*/}
-                        {/*    setIsLoggedIn(true);*/}
-                        {/*})}>*/}
-                        {/*    <div className="space-y-4">*/}
-                        {/*        <div className="space-y-2">*/}
-                        {/*            <Label htmlFor="email">Email</Label>*/}
-                        {/*            <Input {...register("email")} id="email" placeholder="user@example.com" required type="email" />*/}
-                        {/*        </div>*/}
-                        {/*        <div className="space-y-2">*/}
-                        {/*            <Label htmlFor="password">Password</Label>*/}
-                        {/*            <Input {...register("password")} id="password" required type="password" />*/}
-                        {/*        </div>*/}
-                        {/*        <Button className="w-full" type="submit">*/}
-                        {/*            Login*/}
-                        {/*        </Button>*/}
-                        {/*    </div>*/}
-                        {/*</form>*/}
-                        <button onClick={() => {
+                        <form onSubmit={handleSubmit((data) => {
+                            setData(data);
                             setIsLoggedIn(true);
-                        }}>click
-                        </button>
+                        })}>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input {...register("email", {
+                                        required: "This is required"
+                                    })} id="email" placeholder="user@example.com" required type="email" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input {...register("password")} id="password" required type="password" />
+                                </div>
+                                <Button className="w-full" type="submit">
+                                    Login
+                                </Button>
+                            </div>
+                        </form>
+                        {/*<button onClick={() => {*/}
+                        {/*    setIsLoggedIn(true);*/}
+                        {/*}}>click*/}
+                        {/*</button>*/}
                     </CardContent>
                 </Card>
             }

@@ -23,7 +23,6 @@ export function Navbar() {
                     <GitHubLogoIcon className={"mr-2"}/>
                     Source Code
                 </a>
-                <div className={"text-lg"}>Image Editor</div>
                 <ThemeToggler/>
             </div>
         </NavigationMenu>
