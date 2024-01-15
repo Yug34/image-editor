@@ -78,7 +78,7 @@ export const BorderDialog = ({
                                     <HexColorPicker color={borderColor} onChange={setBorderColor}/>
                                 </div>
                                 <Button className="w-full" onClick={(e) => {
-                                    e.preventDefault();
+                                    // e.preventDefault();
                                     addBorderToImage();
                                 }}>
                                     Add Border to image

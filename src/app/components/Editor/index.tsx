@@ -139,6 +139,8 @@ export default function Index() {
     }
 
     const addBorderToImage = async () => {
+        setIsBorderDialogOpen(false);
+
         const ffmpeg = ffmpegRef.current;
         await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `pad=${borderWatch("borderSize") * 2}+iw:${borderWatch("borderSize") * 2}+ih:${borderWatch("borderSize")}:${borderWatch("borderSize")}:${borderColor}`, `output.${imageFormat}`]);
         await cleanUp();
