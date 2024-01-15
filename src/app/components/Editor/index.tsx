@@ -28,7 +28,7 @@ export default function Index() {
     // URL to image Byte Array stored locally
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
     const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
-    const [loaded, setLoaded] = useState(false);
+    const [isImageSubmitted, setIsImageSubmitted] = useState(false);
 
     useEffect(() => {
         if (prevSourceImageURLs.length > 0) {
@@ -278,12 +278,8 @@ export default function Index() {
         <div className={"flex flex-col h-full justify-center items-start"}>
             <ImageUpload
                 fileInputRef={fileInputRef}
-                prevSourceImageURLs={prevSourceImageURLs}
-                setPrevSourceImageURLs={setPrevSourceImageURLs}
                 handleChange={initialize}
                 sourceImageURL={sourceImageURL}
-                loaded={loaded}
-                setLoaded={setLoaded}
             />
         </div>
     )
