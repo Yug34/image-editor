@@ -12,7 +12,16 @@ import {Input} from "@/components/ui/input";
 import {FONTFACES} from "@/constants";
 import {HexColorPicker} from "react-colorful";
 import {Dispatch, SetStateAction} from "react";
-import {TextIcon} from "@radix-ui/react-icons"
+import {TextIcon} from "@radix-ui/react-icons";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 interface TextDialogProps {
     isTextDialogOpen: boolean;
@@ -85,15 +94,24 @@ export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text
                                     />
                                 </div>
                                 <div className="space-y-2">
+                                    <DialogDescription>Font face</DialogDescription>
                                     <Controller
                                         control={control}
                                         name="fontFile"
                                         render={({field}) => {
                                             return (
-                                                <select {...field}>
+                                                <select
+                                                    {...field}
+                                                    className={"h-10 w-full rounded-md border border-input bg-background p-2 text-sm ring-offset-background outline-none"}
+                                                >
                                                     {FONTFACES.map((fontFace) => (
-                                                        <option key={fontFace.display}
-                                                                value={fontFace.file}>{fontFace.display}</option>
+                                                        <option
+                                                            className={"bg-background text-sm ring-offset-background border-none"}
+                                                            key={fontFace.display}
+                                                            value={fontFace.file}
+                                                        >
+                                                            {fontFace.display}
+                                                        </option>
                                                     ))}
                                                 </select>
                                             );

@@ -24,6 +24,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -36,7 +37,6 @@ export default function Index() {
     // URL to image Byte Array stored locally
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
     const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
-    const [isImageSubmitted, setIsImageSubmitted] = useState(false);
 
     useEffect(() => {
         if (prevSourceImageURLs.length > 0) {
@@ -264,14 +264,11 @@ export default function Index() {
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className={"p-0"}>
-                                    <Button
-                                        className={"border-none w-full flex justify-between"}
-                                        onClick={removeURLFromPrevList}
-                                        variant={"outline"}
-                                    >
-                                        Undo
-                                        <ResetIcon />
-                                    </Button>
+                                    <UndoEditCTA
+                                        prevSourceImageURLs={prevSourceImageURLs}
+                                        removeURLFromPrevList={removeURLFromPrevList}
+                                        isInsideDropdownMenu={true}
+                                    />
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -314,14 +311,7 @@ export default function Index() {
                             fontSize={watch("fontSize")}
                             handleTextApplyClick={handleTextApplyClick}
                         />
-                        <Button
-                            className={"rounded-none border-y-0"}
-                            onClick={removeURLFromPrevList}
-                            variant={"outline"}
-                        >
-                            Undo
-                            <ResetIcon className={"ml-2"}/>
-                        </Button>
+                        <UndoEditCTA prevSourceImageURLs={prevSourceImageURLs} removeURLFromPrevList={removeURLFromPrevList}/>
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
                             onClick={downloadImage}
