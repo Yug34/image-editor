@@ -92,12 +92,11 @@ export default function Index() {
     const [isTextDialogOpen, setIsTextDialogOpen] = useState<boolean>(false);
     const [isBorderDialogOpen, setIsBorderDialogOpen] = useState<boolean>(false);
 
-    const handleTextApplyClick = (event: MouseEvent) => {
+    const handleTextApplyClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setIsTextDialogOpen(false);
         setIsApplyingText(true);
 
-        //@ts-ignore
-        const textPositionListener = (e) => {
+        const textPositionListener = (e: MouseEvent) => {
             const x = e ? e.clientX : event.clientX;
             const y = e ? e.clientY : event.clientY;
 
@@ -166,7 +165,7 @@ export default function Index() {
         await ffmpeg.rename(`output.${imageFormat}`, `input.${imageFormat}`);
     }
 
-    const applyTextToImage = async (e: MouseEvent) => {
+    const applyTextToImage = async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
         if (isApplyingText) {
             const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -316,8 +315,7 @@ export default function Index() {
                         ref={imageRef}
                         src={sourceImageURL!}
                         alt={"Image to Edit"}
-                        onClick={async (e) => {
-                            //@ts-ignore
+                        onClick={async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
                             await applyTextToImage(e);
                         }}
                     />

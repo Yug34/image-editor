@@ -22,7 +22,7 @@ interface TextDialogProps {
     setTextColor: Dispatch<SetStateAction<string>>;
     text: string;
     fontSize: number;
-    handleTextApplyClick: (e: MouseEvent) => void;
+    handleTextApplyClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
     isInsideDropdownMenu?: boolean;
 }
 
@@ -122,7 +122,6 @@ export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text
                                     <HexColorPicker color={textColor} onChange={setTextColor}/>
                                 </div>
                                 <Button className="w-full" onClick={(e) => {
-                                    //@ts-ignore
                                     handleTextApplyClick(e);
                                 }}>
                                     Apply Text to image
