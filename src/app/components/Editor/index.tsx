@@ -283,7 +283,10 @@ export default function Index() {
                         </Button>
                     </CardTitle>
 
-                    <CardTitle className={"hidden mb-4 border-b lg:flex"}>
+                    <CardTitle
+                        style={{marginTop: "0px", marginBottom: "16px" }} // className styles weren't working, FIXME!
+                        className={"hidden border-b lg:flex"}
+                    >
                         <Button
                             className={"rounded-none rounded-tl-lg border-none"}
                             variant={"outline"} onClick={greyScale}

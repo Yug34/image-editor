@@ -36,7 +36,7 @@ export default function Home() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="password">Password</Label>
-                                    <Input {...register("password")} id="password" required type="password" />
+                                    <Input {...register("password")} id="password" required type="password" minLength={5} />
                                 </div>
                                 <Button className="w-full" type="submit">
                                     Login
