@@ -3,7 +3,7 @@ import {ChangeEvent, useEffect, useRef, useState} from "react";
 import {FFmpeg} from "@ffmpeg/ffmpeg";
 import {fetchFile, toBlobURL} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
-import {DownloadIcon, ResetIcon, TransparencyGridIcon} from "@radix-ui/react-icons"
+import {DownloadIcon, Pencil2Icon, ResetIcon, TransparencyGridIcon} from "@radix-ui/react-icons"
 
 import {useForm} from "react-hook-form";
 import {
@@ -16,6 +16,14 @@ import {TextDialog} from "@/app/components/Editor/TextDialog";
 import {FONTFACES} from "@/constants";
 import {BorderDialog} from "@/app/components/Editor/BorderDialog";
 import ImageUpload from "@/app/components/ImageUpload";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -205,7 +213,77 @@ export default function Index() {
             <p ref={messageRef}></p>
             <Card className={"p-0"}>
                 <CardHeader className={"p-0"}>
-                    <CardTitle className={"flex mb-4 border-b"}>
+                    <CardTitle className={"flex mb-4 border-b lg:hidden"}>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <Button
+                                    className={"min-w-20 rounded-none rounded-tl-lg border-y-0 border-l-0 border-r lg:hidden"}
+                                    variant={"outline"}
+                                >
+                                    Edit Image
+                                    <Pencil2Icon className={"ml-2"}/>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Select an edit to make</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className={"p-0"}>
+                                    <Button
+                                        className={"border-none w-full flex justify-between"}
+                                        variant={"outline"} onClick={greyScale}
+                                    >
+                                        Greyscale Image
+                                        <TransparencyGridIcon />
+                                    </Button>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className={"p-0"}>
+                                    <BorderDialog
+                                        isBorderDialogOpen={isBorderDialogOpen}
+                                        setIsBorderDialogOpen={setIsBorderDialogOpen}
+                                        borderControl={borderControl}
+                                        borderColor={borderColor}
+                                        setBorderColor={setBorderColor}
+                                        addBorderToImage={addBorderToImage}
+                                        isInsideDropdownMenu={true}
+                                    />
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className={"p-0"}>
+                                    <TextDialog
+                                        isTextDialogOpen={isTextDialogOpen}
+                                        setIsTextDialogOpen={setIsTextDialogOpen}
+                                        control={control}
+                                        textColor={textColor}
+                                        setTextColor={setTextColor}
+                                        text={watch("text")}
+                                        fontSize={watch("fontSize")}
+                                        handleTextApplyClick={handleTextApplyClick}
+                                        isInsideDropdownMenu={true}
+                                    />
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className={"p-0"}>
+                                    <Button
+                                        className={"border-none w-full flex justify-between"}
+                                        onClick={removeURLFromPrevList}
+                                        variant={"outline"}
+                                    >
+                                        Undo
+                                        <ResetIcon />
+                                    </Button>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button
+                            className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
+                            onClick={downloadImage}
+                            variant={"outline"}
+                        >
+                            Download Image
+                            <DownloadIcon className={"ml-2"}/>
+                        </Button>
+                    </CardTitle>
+
+                    <CardTitle className={"hidden mb-4 border-b lg:flex"}>
                         <Button
                             className={"rounded-none rounded-tl-lg border-none"}
                             variant={"outline"} onClick={greyScale}

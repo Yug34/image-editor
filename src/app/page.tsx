@@ -1,6 +1,6 @@
 "use client";
-import {FieldValues, useForm} from "react-hook-form";
-import {useEffect, useState} from "react";
+import {useForm} from "react-hook-form";
+import {useState} from "react";
 import {CardTitle, CardDescription, CardHeader, CardContent, Card} from "@/components/ui/card"
 import {Label} from "@/components/ui/label"
 import {Input} from "@/components/ui/input"
@@ -10,12 +10,7 @@ import {Navbar} from "@/app/components/Navbar";
 
 export default function Home() {
     const {register, handleSubmit} = useForm();
-    const [data, setData] = useState<FieldValues | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-    useEffect(() => {
-        console.log(data);
-    }, [data]);
 
     return (
         <div className={"flex flex-col h-screen w-screen items-center justify-center"}>
@@ -30,7 +25,6 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit((data) => {
-                            setData(data);
                             setIsLoggedIn(true);
                         })}>
                             <div className="space-y-4">
@@ -49,13 +43,9 @@ export default function Home() {
                                 </Button>
                             </div>
                         </form>
-                        {/*<button onClick={() => {*/}
-                        {/*    setIsLoggedIn(true);*/}
-                        {/*}}>click*/}
-                        {/*</button>*/}
                     </CardContent>
                 </Card>
             }
         </div>
     )
-}
+};

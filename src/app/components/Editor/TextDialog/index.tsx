@@ -23,13 +23,14 @@ interface TextDialogProps {
     text: string;
     fontSize: number;
     handleTextApplyClick: (e: MouseEvent) => void;
+    isInsideDropdownMenu?: boolean;
 }
 
-export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, textColor, setTextColor, text, fontSize, handleTextApplyClick}: TextDialogProps) => {
+export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, textColor, setTextColor, text, fontSize, handleTextApplyClick, isInsideDropdownMenu}: TextDialogProps) => {
     return (
         <Dialog open={isTextDialogOpen} onOpenChange={setIsTextDialogOpen}>
             <DialogTrigger asChild>
-                <Button className={"rounded-none border-y-0"} variant={"outline"}>
+                <Button className={`${isInsideDropdownMenu ? "w-full border-none flex justify-between" : "rounded-none border-y-0"}`} variant={"outline"}>
                     Add text
                     <TextIcon className={"ml-2"}/>
                 </Button>

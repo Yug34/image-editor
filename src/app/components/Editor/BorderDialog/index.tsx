@@ -20,6 +20,7 @@ interface BorderDialogProps {
     borderColor: string;
     setBorderColor: Dispatch<SetStateAction<string>>;
     addBorderToImage: () => void;
+    isInsideDropdownMenu?: boolean;
 }
 
 export const BorderDialog = ({
@@ -28,7 +29,8 @@ export const BorderDialog = ({
     borderControl,
     borderColor,
     setBorderColor,
-    addBorderToImage
+    addBorderToImage,
+    isInsideDropdownMenu
 }: BorderDialogProps) => {
     return (
         <Dialog
@@ -36,7 +38,7 @@ export const BorderDialog = ({
             onOpenChange={setIsBorderDialogOpen}
         >
             <DialogTrigger asChild>
-                <Button className={"rounded-none border-y-0 border-r-0 border-l"} variant={"outline"}>
+                <Button className={`${isInsideDropdownMenu ? "w-full border-none flex justify-between" : "rounded-none border-y-0 border-r-0 border-l"}`} variant={"outline"}>
                     Add border
                     <BorderAllIcon className={"ml-2"}/>
                 </Button>
