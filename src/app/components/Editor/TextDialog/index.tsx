@@ -13,15 +13,6 @@ import {FONTFACES} from "@/constants";
 import {HexColorPicker} from "react-colorful";
 import {Dispatch, SetStateAction} from "react";
 import {TextIcon} from "@radix-ui/react-icons";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 
 interface TextDialogProps {
     isTextDialogOpen: boolean;

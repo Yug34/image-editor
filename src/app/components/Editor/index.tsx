@@ -3,7 +3,7 @@ import {ChangeEvent, useEffect, useRef, useState} from "react";
 import {FFmpeg} from "@ffmpeg/ffmpeg";
 import {fetchFile, toBlobURL} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
-import {DownloadIcon, Pencil2Icon, ResetIcon, TransparencyGridIcon} from "@radix-ui/react-icons"
+import {DownloadIcon, Pencil2Icon, TransparencyGridIcon} from "@radix-ui/react-icons"
 
 import {useForm} from "react-hook-form";
 import {
@@ -34,9 +34,12 @@ export default function Index() {
 
     // Store image data as a Byte Array
     const [image, setImage] = useState<Uint8Array | null>(null);
-    // URL to image Byte Array stored locally
+    // URL to the image Byte Array blob above ^
     const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
     const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
+
+    // Storing image format, JPG/JPEG/PNG.
+    const [imageFormat, setImageFormat] = useState<string | null>(null);
 
     useEffect(() => {
         // Set sourceImageURL to the last image in prevSourceImageURLs
@@ -60,9 +63,6 @@ export default function Index() {
             setPrevSourceImageURLs(previousArr => (previousArr.slice(0, -1)));
         }
     }
-
-    // Storing image format, JPG/JPEG/PNG.
-    const [imageFormat, setImageFormat] = useState<string | null>(null);
 
     const [isFFmpegLoaded, setIsFFmpegLoaded] = useState<boolean>(false);
     const ffmpegRef = useRef(new FFmpeg());
@@ -111,32 +111,6 @@ export default function Index() {
         setTextPositionListener(textPositionListener);
     }
 
-    const applyTextToImage = async (e: MouseEvent) => {
-        if (isApplyingText) {
-            const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const ffmpeg = ffmpegRef.current;
-
-            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
-
-            window.removeEventListener("mousemove", textPositionListener!, false);
-            setTextPositionListener(null);
-            setIsApplyingText(false);
-
-            await cleanUp();
-        }
-    }
-
-    const addBorderToImage = async () => {
-        setIsBorderDialogOpen(false);
-
-        const ffmpeg = ffmpegRef.current;
-        await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `pad=${borderWatch("borderSize") * 2}+iw:${borderWatch("borderSize") * 2}+ih:${borderWatch("borderSize")}:${borderWatch("borderSize")}:${borderColor}`, `output.${imageFormat}`]);
-        await cleanUp();
-    }
-
     const loadFFmpegBinaries = async () => {
         const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
         const ffmpeg = ffmpegRef.current;
@@ -166,16 +140,15 @@ export default function Index() {
 
 
     const initialize = async (e: ChangeEvent) => {
+        // get file name and format
         const file = (e.target as HTMLInputElement)!.files![0];
-
         const format = file.type.split("/")[1];
         setImageFormat(format);
 
+        // write file data to WASM memory
         const fileData = await fetchFile(file);
         const ffmpeg = ffmpegRef.current;
-
         await ffmpeg.writeFile(`input.${format}`, fileData);
-
         ffmpeg.readFile(`input.${format}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
             addURLToPrevList(imageURL);
@@ -184,7 +157,7 @@ export default function Index() {
         setImage(fileData);
     }
 
-    const cleanUp = async () => {
+    const cleanUpWASMEnvironment = async () => {
         const ffmpeg = ffmpegRef.current;
         const data = await ffmpeg.readFile(`output.${imageFormat}`);
         const imageURL = URL.createObjectURL(new Blob([data], {type: `image/${imageFormat}`}));
@@ -193,10 +166,36 @@ export default function Index() {
         await ffmpeg.rename(`output.${imageFormat}`, `input.${imageFormat}`);
     }
 
+    const applyTextToImage = async (e: MouseEvent) => {
+        if (isApplyingText) {
+            const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const ffmpeg = ffmpegRef.current;
+
+            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
+
+            window.removeEventListener("mousemove", textPositionListener!, false);
+            setTextPositionListener(null);
+            setIsApplyingText(false);
+
+            await cleanUpWASMEnvironment();
+        }
+    }
+
+    const addBorderToImage = async () => {
+        setIsBorderDialogOpen(false);
+
+        const ffmpeg = ffmpegRef.current;
+        await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `pad=${borderWatch("borderSize") * 2}+iw:${borderWatch("borderSize") * 2}+ih:${borderWatch("borderSize")}:${borderWatch("borderSize")}:${borderColor}`, `output.${imageFormat}`]);
+        await cleanUpWASMEnvironment();
+    }
+
     const greyScale = async () => {
         const ffmpeg = ffmpegRef.current;
         await ffmpeg.exec(`-i input.${imageFormat} -vf hue=s=0 output.${imageFormat}`.split(" "));
-        await cleanUp();
+        await cleanUpWASMEnvironment();
     }
 
     return (isFFmpegLoaded && image) ? (

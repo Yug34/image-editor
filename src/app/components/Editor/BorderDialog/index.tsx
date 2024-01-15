@@ -77,8 +77,7 @@ export const BorderDialog = ({
                                 <div className="flex flex-col gap-y-4 colorPickerParent">
                                     <HexColorPicker color={borderColor} onChange={setBorderColor}/>
                                 </div>
-                                <Button className="w-full" onClick={(e) => {
-                                    // e.preventDefault();
+                                <Button className="w-full" onClick={() => {
                                     addBorderToImage();
                                 }}>
                                     Add Border to image
