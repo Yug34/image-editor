@@ -25,13 +25,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
+import {downloadItem} from "@/lib/utils";
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const messageRef = useRef<HTMLParagraphElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // TODO:
     // Store image data as a Byte Array
     const [image, setImage] = useState<Uint8Array | null>(null);
     // URL to image Byte Array stored locally
@@ -39,15 +39,18 @@ export default function Index() {
     const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
 
     useEffect(() => {
+        // Set sourceImageURL to the last image in prevSourceImageURLs
         if (prevSourceImageURLs.length > 0) {
             setSourceImageURL(prevSourceImageURLs[prevSourceImageURLs.length - 1]);
         }
     }, [prevSourceImageURLs]);
 
+    // Add a new image URL to the end of prevSourceImageURLs
     const addURLToPrevList = (newURL: string) => {
         setPrevSourceImageURLs(prevState => [...prevState, newURL]);
     }
 
+    // Add URL at the end of prevSourceImageURLs, remove it from WASM memory
     const removeURLFromPrevList = async () => {
         if (prevSourceImageURLs.length > 1) {
             const ffmpeg = ffmpegRef.current;
@@ -58,10 +61,15 @@ export default function Index() {
         }
     }
 
+    // Storing image format, JPG/JPEG/PNG.
     const [imageFormat, setImageFormat] = useState<string | null>(null);
 
     const [isFFmpegLoaded, setIsFFmpegLoaded] = useState<boolean>(false);
     const ffmpegRef = useRef(new FFmpeg());
+
+    const followDivRef = useRef<HTMLDivElement | null>(null);
+    const [isApplyingText, setIsApplyingText] = useState<boolean>(false);
+    const [textPositionListener, setTextPositionListener] = useState<((e: any) => void) | null>(null);
     const [textColor, setTextColor] = useState("#00ff00");
     const [borderColor, setBorderColor] = useState("#00ff00");
 
@@ -81,25 +89,8 @@ export default function Index() {
         }
     });
 
-    const [isApplyingText, setIsApplyingText] = useState<boolean>(false);
-
-    const followDivRef = useRef<HTMLDivElement | null>(null);
-
-    const [textPositionListener, setTextPositionListener] = useState<((e: any) => void) | null>(null);
-
     const [isTextDialogOpen, setIsTextDialogOpen] = useState<boolean>(false);
     const [isBorderDialogOpen, setIsBorderDialogOpen] = useState<boolean>(false);
-
-    const downloadImage = () => {
-        const link = document.createElement("a");
-        link.download = `output.${imageFormat}`;
-        link.target = "_blank";
-
-        link.href = sourceImageURL!;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
 
     const handleTextApplyClick = (event: MouseEvent) => {
         setIsTextDialogOpen(false);
@@ -146,18 +137,7 @@ export default function Index() {
         await cleanUp();
     }
 
-    useEffect(() => {
-        (async () => {
-            await load();
-            const ffmpeg = ffmpegRef.current;
-            await Promise.all(FONTFACES.map(async fontFace => {
-                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"}/fonts/${fontFace.file}`));
-            }));
-        })();
-    }, []);
-
-    const load = async () => {
-        // FFmpeg.wasm base URL:
+    const loadFFmpegBinaries = async () => {
         const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
         const ffmpeg = ffmpegRef.current;
 
@@ -165,8 +145,7 @@ export default function Index() {
             console.log(message);
         });
 
-        // toBlobURL is used to bypass CORS issue, urls with the same
-        // domain can be used directly.
+        // toBlobURL is used to bypass CORS issue, urls with the same domain can be used directly.
         await ffmpeg.load({
             coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
             wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
@@ -174,6 +153,16 @@ export default function Index() {
 
         setIsFFmpegLoaded(true);
     }
+
+    useEffect(() => {
+        (async () => {
+            await loadFFmpegBinaries();
+            const ffmpeg = ffmpegRef.current;
+            await Promise.all(FONTFACES.map(async fontFace => {
+                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"}/fonts/${fontFace.file}`));
+            }));
+        })();
+    }, []);
 
 
     const initialize = async (e: ChangeEvent) => {
@@ -274,7 +263,7 @@ export default function Index() {
                         </DropdownMenu>
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
-                            onClick={downloadImage}
+                            onClick={() => downloadItem(`output.${imageFormat}`, sourceImageURL!)}
                             variant={"outline"}
                         >
                             Download Image
@@ -314,7 +303,7 @@ export default function Index() {
                         <UndoEditCTA prevSourceImageURLs={prevSourceImageURLs} removeURLFromPrevList={removeURLFromPrevList}/>
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
-                            onClick={downloadImage}
+                            onClick={() => downloadItem(`output.${imageFormat}`, sourceImageURL!)}
                             variant={"outline"}
                         >
                             Download Image
@@ -324,7 +313,7 @@ export default function Index() {
                 </CardHeader>
                 <CardContent>
                     <img
-                        className={"max-w-[70vw] max-h-[70vh]"}
+                        className={"max-w-[80vw] max-h-[80vh] lg:max-w-[70vw] lg:max-h-[70vh]"}
                         ref={imageRef}
                         src={sourceImageURL!}
                         alt={"Image to Edit"}
@@ -335,8 +324,7 @@ export default function Index() {
                     />
                 </CardContent>
             </Card>
-            <div className={"flex gap-x-8 mt-8"}>
-            </div>
+            <div className={"flex gap-x-8 mt-8"} />
             {isApplyingText ? (
                 <div
                     ref={followDivRef}
