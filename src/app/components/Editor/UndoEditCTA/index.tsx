@@ -13,8 +13,8 @@ export const UndoEditCTA = ({removeURLFromPrevList, isInsideDropdownMenu, prevSo
         <Button
             className={cn(
                 isInsideDropdownMenu ? "border-none w-full flex justify-between" : "rounded-none border-y-0",
-                prevSourceImageURLs ? "cursor-not-allowed" : "cursor-pointer"
-                )}
+                prevSourceImageURLs.length <= 1 ? "cursor-not-allowed" : "cursor-pointer"
+            )}
             onClick={removeURLFromPrevList}
             variant={"outline"}
         >
