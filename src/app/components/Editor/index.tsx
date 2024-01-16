@@ -156,6 +156,22 @@ export default function Index() {
         setImage(fileData);
     }
 
+    const initializeWithPreloadedImage = async (fileUrl: string) => {
+        const imgFormat = "png"; // All preloaded images are PNGs.
+        setImageFormat(imgFormat);
+
+        // write file data to WASM memory
+        const fileData = await fetchFile(fileUrl);
+        const ffmpeg = ffmpegRef.current;
+        await ffmpeg.writeFile(`input.${imgFormat}`, fileData);
+        ffmpeg.readFile(`input.${imgFormat}`).then((imageData) => {
+            const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${imgFormat}`}));
+            addURLToPrevList(imageURL);
+        });
+
+        setImage(fileData);
+    }
+
     const cleanUpWASMEnvironment = async () => {
         const ffmpeg = ffmpegRef.current;
         const data = await ffmpeg.readFile(`output.${imageFormat}`);
@@ -315,7 +331,7 @@ export default function Index() {
                         ref={imageRef}
                         src={sourceImageURL!}
                         alt={"Image to Edit"}
-                        onClick={async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
+                        onMouseDown={async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
                             await applyTextToImage(e);
                         }}
                     />
@@ -336,7 +352,8 @@ export default function Index() {
         <div className={"flex flex-col h-full justify-center items-start"}>
             <ImageUpload
                 fileInputRef={fileInputRef}
-                handleChange={initialize}
+                initialize={initialize}
+                initializeWithPreloadedImage={initializeWithPreloadedImage}
                 sourceImageURL={sourceImageURL}
             />
         </div>
