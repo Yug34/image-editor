@@ -19,6 +19,8 @@ A client-side image editor, made with `FFmpeg.wasm` and NextJS.
 
 Put in any email and a password (min. length 5 characters), and it should ask you to upload an image.
 
+(...or just skip login)
+
 ## Run locally
 
 ```bash

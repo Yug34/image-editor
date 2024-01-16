@@ -43,6 +43,9 @@ export default function Home() {
                                 </Button>
                             </div>
                         </form>
+                        <Button className="w-full mt-4" variant={"outline"} type="submit" onClick={() => { setIsLoggedIn(true) }}>
+                            Skip Login
+                        </Button>
                     </CardContent>
                 </Card>
             }
