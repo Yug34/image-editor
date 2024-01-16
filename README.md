@@ -13,6 +13,7 @@ A client-side image editor, made with `FFmpeg.wasm` and NextJS.
 * **Add greyscale filter to image**
 * **Download Edited Image**
 * **Resize Image dimensions: TODO!**
+* **Compress Image: TODO!**
 
 ## Usage
 
