@@ -6,7 +6,7 @@ A client-side image editor, made with `FFmpeg.wasm` and NextJS.
 
 * **Add text to image**
   * Change color, size, and font-face of the text
-* **Add a border/framd to image**
+* **Add a border/frame to image**
   * Change color and size of border
 * **Undo Edits serially**
   * Revert and apply new edit on a previous edit
