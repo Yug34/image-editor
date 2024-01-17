@@ -1,7 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import {FFmpeg} from "@ffmpeg/ffmpeg";
-import {FSNode} from "@ffmpeg/ffmpeg/dist/esm/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -13,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
 //     return directories.filter((dir) => dir.name === fontToCheck).length === 1;
 // }
 
-export const findFFmpegLogFile = (files: FSNode[]): {
+export const findFFmpegLogFile = (files: {name: string; isDir: boolean;}[]): {
   isFileFound: boolean;
   fileName: string | null;
 } => {
