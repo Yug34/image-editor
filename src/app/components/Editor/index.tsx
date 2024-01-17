@@ -25,7 +25,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
-import {downloadItem} from "@/lib/utils";
+import {downloadItem, readImageDimensions} from "@/lib/utils";
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -153,6 +153,8 @@ export default function Index() {
         const ffmpeg = ffmpegRef.current;
         await ffmpeg.writeFile(`input.${format}`, fileData);
 
+        setImageDimensions(await readImageDimensions(ffmpeg, `input.${format}`));
+
         ffmpeg.readFile(`input.${format}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
             addURLToPrevList(imageURL);
@@ -169,6 +171,9 @@ export default function Index() {
         const fileData = await fetchFile(fileUrl);
         const ffmpeg = ffmpegRef.current;
         await ffmpeg.writeFile(`input.${imgFormat}`, fileData);
+
+        setImageDimensions(await readImageDimensions(ffmpeg, `input.${imgFormat}`));
+
         ffmpeg.readFile(`input.${imgFormat}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${imgFormat}`}));
             addURLToPrevList(imageURL);
@@ -188,13 +193,15 @@ export default function Index() {
 
     const applyTextToImage = async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
         if (isApplyingText) {
-            const rect = (e.target as HTMLImageElement)!.getBoundingClientRect();
+            const rect = imageRef.current!.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            const ffmpeg = ffmpegRef.current;
+            let wRatio = imageDimensions.x === 0 ? 1 : rect.width / imageDimensions.x;
+            let hRatio = imageDimensions.y === 0 ? 1 : rect.height / imageDimensions.y;
 
-            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x}:y=${y}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
+            const ffmpeg = ffmpegRef.current;
+            await ffmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x / wRatio}:y=${y / hRatio}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
 
             window.removeEventListener("mousemove", textPositionListener!, false);
             setTextPositionListener(null);
@@ -236,14 +243,14 @@ export default function Index() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>Select an edit to make</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
+                                <DropdownMenuSeparator/>
                                 <DropdownMenuItem className={"p-0"}>
                                     <Button
                                         className={"border-none w-full flex justify-between"}
                                         variant={"outline"} onClick={greyScale}
                                     >
                                         Greyscale Image
-                                        <TransparencyGridIcon />
+                                        <TransparencyGridIcon/>
                                     </Button>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className={"p-0"}>
@@ -270,7 +277,7 @@ export default function Index() {
                                         isInsideDropdownMenu={true}
                                     />
                                 </DropdownMenuItem>
-                                <DropdownMenuSeparator />
+                                <DropdownMenuSeparator/>
                                 <DropdownMenuItem className={"p-0"}>
                                     <UndoEditCTA
                                         prevSourceImageURLs={prevSourceImageURLs}
@@ -291,7 +298,7 @@ export default function Index() {
                     </CardTitle>
 
                     <CardTitle
-                        style={{marginTop: "0px", marginBottom: "16px" }} // className styles weren't working, FIXME!
+                        style={{marginTop: "0px", marginBottom: "16px"}} // className styles weren't working, FIXME!
                         className={"hidden border-b lg:flex"}
                     >
                         <Button
@@ -319,7 +326,8 @@ export default function Index() {
                             fontSize={watch("fontSize")}
                             handleTextApplyClick={handleTextApplyClick}
                         />
-                        <UndoEditCTA prevSourceImageURLs={prevSourceImageURLs} removeURLFromPrevList={removeURLFromPrevList}/>
+                        <UndoEditCTA prevSourceImageURLs={prevSourceImageURLs}
+                                     removeURLFromPrevList={removeURLFromPrevList}/>
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
                             onClick={() => downloadItem(`output.${imageFormat}`, sourceImageURL!)}
@@ -342,11 +350,18 @@ export default function Index() {
                     />
                 </CardContent>
             </Card>
-            <div className={"flex gap-x-8 mt-8"} />
             {isApplyingText ? (
                 <div
                     ref={followDivRef}
-                    style={{fontSize: `${watch("fontSize")}px`, color: textColor}}
+                    style={{
+                        fontSize: `${watch("fontSize")}px`,
+                        color: textColor,
+                        transform: `scale(${
+                            imageRef.current!.getBoundingClientRect().width / imageDimensions.x
+                        }, ${
+                            imageRef.current!.getBoundingClientRect().height / imageDimensions.y
+                        })`
+                }}
                     className={`absolute top-0 left-0 pointer-events-none`}
                 >
                     {watch("text")}
@@ -360,7 +375,6 @@ export default function Index() {
                 fileInputRef={fileInputRef}
                 initialize={initialize}
                 initializeWithPreloadedImage={initializeWithPreloadedImage}
-                sourceImageURL={sourceImageURL}
             />
         </div>
     )

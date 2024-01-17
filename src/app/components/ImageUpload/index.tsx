@@ -51,7 +51,7 @@ export default function ImageUpload({initialize, fileInputRef, initializeWithPre
                 <CardTitle className="mb-3 flex justify-between items-center">
                     <div>Add an image to edit</div>
                     {!isFFmpegLoaded ? (
-                        <small>
+                        <small className={"flex gap-x-4 text-green-400"}>
                             Loading FFmpeg
                             <Loader />
                         </small>
