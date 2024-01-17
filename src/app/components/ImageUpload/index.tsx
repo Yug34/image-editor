@@ -9,15 +9,27 @@ import starry from "../../../../public/images/Starry.png";
 import iimPhoto from "../../../../public/images/iimPhoto.png";
 import fttwte from "../../../../public/images/forthosethatwishtoexist.png";
 
+const Loader = () => (
+    <svg className={"animate-spin"} stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22C17.5228 22 22 17.5228 22 12H19C19 15.866 15.866 19 12 19V22Z" fill="currentColor"/>
+        <path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="currentColor"/>
+    </svg>
+);
+
+const LoadedCheck = () => (
+    <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+        <path d="M170.718 216.482L141.6 245.6l93.6 93.6 208-208-29.118-29.118L235.2 279.918l-64.482-63.436zM422.4 256c0 91.518-74.883 166.4-166.4 166.4S89.6 347.518 89.6 256 164.482 89.6 256 89.6c15.6 0 31.2 2.082 45.764 6.241L334 63.6C310.082 53.2 284.082 48 256 48 141.6 48 48 141.6 48 256s93.6 208 208 208 208-93.6 208-208h-41.6z"/>
+    </svg>
+);
+
 interface ImageUploadProps {
     fileInputRef: RefObject<HTMLInputElement>;
-    sourceImageURL: string | null;
     initialize(e: ChangeEvent): Promise<void>;
     initializeWithPreloadedImage(fileUrl: string): Promise<void>;
+    isFFmpegLoaded: boolean;
 }
 
-// TODO: Display image with sourceImageURL
-export default function ImageUpload({initialize, fileInputRef, sourceImageURL, initializeWithPreloadedImage}: ImageUploadProps) {
+export default function ImageUpload({initialize, fileInputRef, initializeWithPreloadedImage, isFFmpegLoaded}: ImageUploadProps) {
     const IMAGES = [
         {
             source: starry,
@@ -36,7 +48,20 @@ export default function ImageUpload({initialize, fileInputRef, sourceImageURL, i
     return (
         <Card>
             <CardHeader>
-                <CardTitle className=" mb-3">Add an image to edit</CardTitle>
+                <CardTitle className="mb-3 flex justify-between items-center">
+                    <div>Add an image to edit</div>
+                    {!isFFmpegLoaded ? (
+                        <small>
+                            Loading FFmpeg
+                            <Loader />
+                        </small>
+                    ) : (
+                        <small className={"flex gap-x-4 text-green-400"}>
+                            FFmpeg loaded
+                            <LoadedCheck/>
+                        </small>
+                    )}
+                </CardTitle>
             </CardHeader>
 
             <CardContent>
@@ -64,7 +89,11 @@ export default function ImageUpload({initialize, fileInputRef, sourceImageURL, i
                     accept="image/png, image/jpeg, image/webp"
                     type="file"
                     className="hidden"
-                    onChange={initialize}
+                    onChange={(e) => {
+                        if(isFFmpegLoaded) {
+                            initialize(e);
+                        }
+                    }}
                 />
 
                 <div className="relative mt-4">
@@ -86,7 +115,9 @@ export default function ImageUpload({initialize, fileInputRef, sourceImageURL, i
                             src={source}
                             className={"max-w-[200px] rounded-lg cursor-pointer hover:brightness-[1.15]"}
                             onClick={async () => {
-                                await initializeWithPreloadedImage(source.src);
+                                if (isFFmpegLoaded) {
+                                    await initializeWithPreloadedImage(source.src);
+                                }
                             }}
                         />
                     ))}

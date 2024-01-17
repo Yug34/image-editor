@@ -40,6 +40,10 @@ export default function Index() {
 
     // Storing image format, JPG/JPEG/PNG.
     const [imageFormat, setImageFormat] = useState<string | null>(null);
+    const [imageDimensions, setImageDimensions] = useState({
+        x: 0,
+        y: 0
+    });
 
     useEffect(() => {
         // Set sourceImageURL to the last image in prevSourceImageURLs
@@ -148,6 +152,7 @@ export default function Index() {
         const fileData = await fetchFile(file);
         const ffmpeg = ffmpegRef.current;
         await ffmpeg.writeFile(`input.${format}`, fileData);
+
         ffmpeg.readFile(`input.${format}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
             addURLToPrevList(imageURL);
@@ -351,6 +356,7 @@ export default function Index() {
     ) : (
         <div className={"flex flex-col h-full justify-center items-start"}>
             <ImageUpload
+                isFFmpegLoaded={isFFmpegLoaded}
                 fileInputRef={fileInputRef}
                 initialize={initialize}
                 initializeWithPreloadedImage={initializeWithPreloadedImage}
