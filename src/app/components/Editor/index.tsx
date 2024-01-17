@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
 import {downloadItem, readImageDimensions} from "@/lib/utils";
+import {FloatingText} from "@/app/components/Editor/FloatingText";
 
 export default function Index() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -351,21 +352,14 @@ export default function Index() {
                 </CardContent>
             </Card>
             {isApplyingText ? (
-                <div
-                    ref={followDivRef}
-                    style={{
-                        fontSize: `${watch("fontSize")}px`,
-                        color: textColor,
-                        transform: `scale(${
-                            imageRef.current!.getBoundingClientRect().width / imageDimensions.x
-                        }, ${
-                            imageRef.current!.getBoundingClientRect().height / imageDimensions.y
-                        })`
-                }}
-                    className={`absolute top-0 left-0 pointer-events-none`}
-                >
-                    {watch("text")}
-                </div>
+                <FloatingText
+                    followDivRef={followDivRef}
+                    fontSize={watch("fontSize")}
+                    textColor={textColor}
+                    imageRef={imageRef}
+                    text={watch("text")}
+                    imageDimensions={imageDimensions}
+                />
             ) : null}
         </div>
     ) : (
