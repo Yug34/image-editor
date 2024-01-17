@@ -1,10 +1,10 @@
-import {Ref} from "react";
+import {RefObject} from "react";
 
 interface FloatingTextProps {
-    followDivRef: Ref<HTMLDivElement>;
+    followDivRef: RefObject<HTMLDivElement>;
     fontSize: number;
     textColor: string;
-    imageRef: Ref<HTMLImageElement>;
+    imageRef: RefObject<HTMLImageElement>;
     text: string;
     imageDimensions: {
         x: number;
@@ -20,9 +20,9 @@ export const FloatingText = ({followDivRef, fontSize, textColor, imageRef, text,
                 fontSize: `${fontSize}px`,
                 color: textColor,
                 transform: `scale(${
-                    imageRef!.current!.getBoundingClientRect().width / imageDimensions.x
+                    imageRef.current!.getBoundingClientRect().width / imageDimensions.x
                 }, ${
-                    imageRef!.current!.getBoundingClientRect().height / imageDimensions.y
+                    imageRef.current!.getBoundingClientRect().height / imageDimensions.y
                 })`
             }}
             className={`absolute top-0 left-0 pointer-events-none`}
