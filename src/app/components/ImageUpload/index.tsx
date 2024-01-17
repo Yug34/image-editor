@@ -5,9 +5,9 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import Image from "next/image";
-import beatles from "../../../../public/images/beatles.png";
 import starry from "../../../../public/images/Starry.png";
-import workers from "../../../../public/images/workers.png";
+import iimPhoto from "../../../../public/images/iimPhoto.png";
+import fttwte from "../../../../public/images/forthosethatwishtoexist.png";
 
 interface ImageUploadProps {
     fileInputRef: RefObject<HTMLInputElement>;
@@ -18,20 +18,19 @@ interface ImageUploadProps {
 
 // TODO: Display image with sourceImageURL
 export default function ImageUpload({initialize, fileInputRef, sourceImageURL, initializeWithPreloadedImage}: ImageUploadProps) {
-    const imageClass = "max-w-[200px] rounded-lg cursor-pointer hover:brightness-[1.15]";
     const IMAGES = [
-        {
-            source: beatles,
-            alt: "Beatles"
-        },
         {
             source: starry,
             alt: "Starry night"
         },
         {
-            source: workers,
-            alt: "Workers on a beam"
-        }
+            source: iimPhoto,
+            alt: "A photo I took in IIM Ahmedabad"
+        },
+        {
+            source: fttwte,
+            alt: "Architects' FTTWE album cover"
+        },
     ]
 
     return (
@@ -85,7 +84,7 @@ export default function ImageUpload({initialize, fileInputRef, sourceImageURL, i
                             key={alt}
                             alt={alt}
                             src={source}
-                            className={imageClass}
+                            className={"max-w-[200px] rounded-lg cursor-pointer hover:brightness-[1.15]"}
                             onClick={async () => {
                                 await initializeWithPreloadedImage(source.src);
                             }}
