@@ -30,7 +30,6 @@ import {useFfmpegDataStore} from "@/store/ffmpegDataStore";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
-    const messageRef = useRef<HTMLParagraphElement>(null);
 
     const {
         sourceImageURL,
@@ -149,7 +148,6 @@ export default function Editor() {
 
     return (
         <div className={"flex flex-col w-full h-full justify-center items-center"}>
-            <p ref={messageRef}></p>
             <Card className={"p-0"}>
                 <CardHeader className={"p-0"}>
                     <CardTitle className={"flex mb-4 border-b lg:hidden"}>

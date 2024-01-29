@@ -19,5 +19,5 @@ export const useTransformationsDataStore = create<TransformationsDataStore>()((s
     textColor: "#00ff00",
     setTextColor: (color: string) => set(() => ({textColor: color})),
     borderColor: "#00ff00",
-    setBorderColor: (color: string) => set(() => ({borderColor: color})),
+    setBorderColor: (color: string) => set(() => ({borderColor: color}))
 }));
