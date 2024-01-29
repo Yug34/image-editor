@@ -54,8 +54,8 @@ export default function Editor() {
     // remove URL at the end of prevSourceImageURLs, remove associated image from WASM memory
     const removeURLFromPrevList = async () => {
         if (prevSourceImageURLs.length > 1) {
-            await FFmpeg.deleteFile(`input.${imageFormat}`);
-            await FFmpeg.writeFile(`input.${imageFormat}`, await fetchFile(prevSourceImageURLs[prevSourceImageURLs.length - 2]));
+            await FFmpeg!.deleteFile(`input.${imageFormat}`);
+            await FFmpeg!.writeFile(`input.${imageFormat}`, await fetchFile(prevSourceImageURLs[prevSourceImageURLs.length - 2]));
 
             setPrevSourceImageURLs(prevSourceImageURLs.slice(0, -1));
         }
@@ -108,11 +108,11 @@ export default function Editor() {
     }
 
     const cleanUpWASMEnvironment = async () => {
-        const data = await FFmpeg.readFile(`output.${imageFormat}`);
+        const data = await FFmpeg!.readFile(`output.${imageFormat}`);
         const imageURL = URL.createObjectURL(new Blob([data], {type: `image/${imageFormat}`}));
         addURLToPrevList(imageURL);
-        await FFmpeg.deleteFile(`input.${imageFormat}`);
-        await FFmpeg.rename(`output.${imageFormat}`, `input.${imageFormat}`);
+        await FFmpeg!.deleteFile(`input.${imageFormat}`);
+        await FFmpeg!.rename(`output.${imageFormat}`, `input.${imageFormat}`);
     }
 
     const applyTextToImage = async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
@@ -124,7 +124,7 @@ export default function Editor() {
             let wRatio = imageDimensions.x === 0 ? 1 : rect.width / imageDimensions.x;
             let hRatio = imageDimensions.y === 0 ? 1 : rect.height / imageDimensions.y;
 
-            await FFmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x / wRatio}:y=${y / hRatio}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
+            await FFmpeg!.exec(["-i", `input.${imageFormat}`, "-vf", `drawtext=fontfile=${watch("fontFile")}:text=${watch("text") ?? "Sample Text"}:x=${x / wRatio}:y=${y / hRatio}:fontsize=${watch("fontSize")}:fontcolor=${textColor ?? "#00ff00"}`, `output.${imageFormat}`, "-loglevel", "debug"])
 
             window.removeEventListener("mousemove", textPositionListener!, false);
             setTextPositionListener(null);
@@ -137,12 +137,12 @@ export default function Editor() {
     const addBorderToImage = async () => {
         setIsBorderDialogOpen(false);
 
-        await FFmpeg.exec(["-i", `input.${imageFormat}`, "-vf", `pad=${borderWatch("borderSize") * 2}+iw:${borderWatch("borderSize") * 2}+ih:${borderWatch("borderSize")}:${borderWatch("borderSize")}:${borderColor}`, `output.${imageFormat}`]);
+        await FFmpeg!.exec(["-i", `input.${imageFormat}`, "-vf", `pad=${borderWatch("borderSize") * 2}+iw:${borderWatch("borderSize") * 2}+ih:${borderWatch("borderSize")}:${borderWatch("borderSize")}:${borderColor}`, `output.${imageFormat}`]);
         await cleanUpWASMEnvironment();
     }
 
     const greyScale = async () => {
-        await FFmpeg.exec(`-i input.${imageFormat} -vf hue=s=0 output.${imageFormat}`.split(" "));
+        await FFmpeg!.exec(`-i input.${imageFormat} -vf hue=s=0 output.${imageFormat}`.split(" "));
         await cleanUpWASMEnvironment();
     }
 

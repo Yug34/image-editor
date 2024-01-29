@@ -5,9 +5,6 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import Image from "next/image";
-import starry from "../../../../public/images/Starry.png";
-import iimPhoto from "../../../../public/images/iimPhoto.png";
-import fttwte from "../../../../public/images/forthosethatwishtoexist.png";
 import {IMAGES} from "@/constants";
 import {useFfmpegDataStore} from "@/store/ffmpegDataStore";
 import {useImageDataStore} from "@/store/imageDataStore";
@@ -48,10 +45,10 @@ export default function ImageUpload({fileInputRef}: ImageUploadProps) {
         }
         setImageFormat(imgFormat);
 
-        await FFmpeg.writeFile(`input.${imgFormat}`, fileData);
-        setImageDimensions(await readImageDimensions(FFmpeg, `input.${imgFormat}`));
+        await FFmpeg!.writeFile(`input.${imgFormat}`, fileData);
+        setImageDimensions(await readImageDimensions(FFmpeg!, `input.${imgFormat}`));
 
-        FFmpeg.readFile(`input.${imgFormat}`).then((imageData) => {
+        FFmpeg!.readFile(`input.${imgFormat}`).then((imageData) => {
             const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${imgFormat}`}));
             addURLToPrevList(imageURL);
         });

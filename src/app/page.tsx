@@ -9,19 +9,20 @@ import {fetchFile, toBlobURL} from "@ffmpeg/util";
 import {FONTFACES} from "@/constants";
 
 export default function Home() {
-  const {isFFmpegLoaded, FFmpeg, setIsFFmpegLoaded} = useFfmpegDataStore();
+  const {isFFmpegLoaded, FFmpeg, setIsFFmpegLoaded, makeFFmpeg} = useFfmpegDataStore();
   const {image} = useImageDataStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadFFmpegBinaries = async () => {
+    makeFFmpeg(); // FFmpeg can't run on Node, so we can't initialize it by default
     const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
 
-    FFmpeg.on('log', ({message}) => {
+    FFmpeg!.on('log', ({message}) => {
       console.log(message);
     });
 
     // toBlobURL is used to bypass CORS issue, urls with the same domain can be used directly.
-    await FFmpeg.load({
+    await FFmpeg!.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
     });
@@ -33,7 +34,7 @@ export default function Home() {
     (async () => {
       await loadFFmpegBinaries();
       await Promise.all(FONTFACES.map(async fontFace => {
-        await FFmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-yug34.vercel.app/"}/fonts/${fontFace.file}`));
+        await FFmpeg!.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-yug34.vercel.app/"}/fonts/${fontFace.file}`));
       }));
     })();
   }, []);
