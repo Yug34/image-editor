@@ -25,12 +25,11 @@ const LoadedCheck = () => (
 
 interface ImageUploadProps {
     fileInputRef: RefObject<HTMLInputElement>;
-    initialize(e: ChangeEvent): Promise<void>;
-    initializeWithPreloadedImage(fileUrl: string): Promise<void>;
+    initialize(e: ChangeEvent | null, fileURL?: string): Promise<void>;
     isFFmpegLoaded: boolean;
 }
 
-export default function ImageUpload({initialize, fileInputRef, initializeWithPreloadedImage, isFFmpegLoaded}: ImageUploadProps) {
+export default function ImageUpload({initialize, fileInputRef, isFFmpegLoaded}: ImageUploadProps) {
     return (
         <Card>
             <CardHeader>
@@ -95,7 +94,7 @@ export default function ImageUpload({initialize, fileInputRef, initializeWithPre
                             className={"max-w-[200px] rounded-lg cursor-pointer hover:brightness-[1.15]"}
                             onClick={async () => {
                                 if (isFFmpegLoaded) {
-                                    await initializeWithPreloadedImage(source.src);
+                                    await initialize(null, source.src);
                                 }
                             }}
                         />

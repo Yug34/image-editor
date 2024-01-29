@@ -132,34 +132,19 @@ export default function Editor() {
         })();
     }, []);
 
-
-    const initialize = async (e: ChangeEvent) => {
-        // get file name and format
-        const file = (e.target as HTMLInputElement)!.files![0];
-        const format = file.type.split("/")[1];
-        setImageFormat(format);
-
-        // write file data to WASM memory
-        const fileData = await fetchFile(file);
-        const ffmpeg = ffmpegRef.current;
-        await ffmpeg.writeFile(`input.${format}`, fileData);
-
-        setImageDimensions(await readImageDimensions(ffmpeg, `input.${format}`));
-
-        ffmpeg.readFile(`input.${format}`).then((imageData) => {
-            const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${format}`}));
-            addURLToPrevList(imageURL);
-        });
-
-        setImage(fileData);
-    }
-
-    const initializeWithPreloadedImage = async (fileUrl: string) => {
-        const imgFormat = "png"; // All preloaded images are PNGs.
+    const initialize = async (e: ChangeEvent | null, fileURL?: string) => {
+        let imgFormat: string;
+        let fileData: Uint8Array;
+        if (e === null) {
+            imgFormat = "png"; // All preloaded images are PNGs.
+            fileData = await fetchFile(fileURL);
+        } else {
+            const file = (e.target as HTMLInputElement)!.files![0];
+            imgFormat = file.type.split("/")[1];
+            fileData = await fetchFile(file);
+        }
         setImageFormat(imgFormat);
 
-        // write file data to WASM memory
-        const fileData = await fetchFile(fileUrl);
         const ffmpeg = ffmpegRef.current;
         await ffmpeg.writeFile(`input.${imgFormat}`, fileData);
 
@@ -358,7 +343,6 @@ export default function Editor() {
                 isFFmpegLoaded={isFFmpegLoaded}
                 fileInputRef={fileInputRef}
                 initialize={initialize}
-                initializeWithPreloadedImage={initializeWithPreloadedImage}
             />
         </div>
     )
