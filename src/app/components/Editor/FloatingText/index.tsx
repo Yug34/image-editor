@@ -1,4 +1,5 @@
 import {RefObject} from "react";
+import {useTransformationsDataStore} from "@/store/transformationsDataStore";
 
 interface FloatingTextProps {
     followDivRef: RefObject<HTMLDivElement>;
@@ -13,7 +14,9 @@ interface FloatingTextProps {
 }
 
 export const FloatingText = ({followDivRef, fontSize, textColor, imageRef, text, imageDimensions}: FloatingTextProps) => {
-    return (
+    const { isApplyingText} = useTransformationsDataStore();
+
+    return isApplyingText ? (
         <div
             ref={followDivRef}
             style={{
@@ -29,5 +32,5 @@ export const FloatingText = ({followDivRef, fontSize, textColor, imageRef, text,
         >
             {text}
         </div>
-    )
+    ) : null;
 }

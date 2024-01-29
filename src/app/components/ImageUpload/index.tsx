@@ -9,6 +9,7 @@ import starry from "../../../../public/images/Starry.png";
 import iimPhoto from "../../../../public/images/iimPhoto.png";
 import fttwte from "../../../../public/images/forthosethatwishtoexist.png";
 import {IMAGES} from "@/constants";
+import {useFfmpegDataStore} from "@/store/ffmpegDataStore";
 
 const Loader = () => (
     <svg className={"animate-spin"} stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -26,10 +27,11 @@ const LoadedCheck = () => (
 interface ImageUploadProps {
     fileInputRef: RefObject<HTMLInputElement>;
     initialize(e: ChangeEvent | null, fileURL?: string): Promise<void>;
-    isFFmpegLoaded: boolean;
 }
 
-export default function ImageUpload({initialize, fileInputRef, isFFmpegLoaded}: ImageUploadProps) {
+export default function ImageUpload({initialize, fileInputRef}: ImageUploadProps) {
+    const {isFFmpegLoaded} = useFfmpegDataStore();
+
     return (
         <Card>
             <CardHeader>
@@ -62,7 +64,6 @@ export default function ImageUpload({initialize, fileInputRef, isFFmpegLoaded}: 
                 </Label>
 
                 <Input
-                    ref={fileInputRef}
                     id="dropzone-file"
                     accept="image/png, image/jpeg, image/webp"
                     type="file"

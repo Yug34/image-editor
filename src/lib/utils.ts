@@ -56,7 +56,6 @@ export const readImageDimensions = async (ffmpeg: FFmpeg, imageFile: string): Pr
   return dimensions;
 }
 
-
 export const downloadItem = (itemName: string, itemLink: string) => {
   const link = document.createElement("a");
   link.download = itemName;
