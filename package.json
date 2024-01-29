@@ -31,7 +31,8 @@
     "react-hook-form": "^7.49.3",
     "shadcn-ui": "latest",
     "tailwind-merge": "^2.2.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^4.5.0"
   },
   "devDependencies": {
     "typescript": "^5",

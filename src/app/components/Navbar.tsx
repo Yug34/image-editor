@@ -12,7 +12,7 @@ import {GitHubLogoIcon} from "@radix-ui/react-icons";
 
 export function Navbar() {
     return (
-        <NavigationMenu className={"absolute top-0 left-0 max-w-full w-full border-b-2 bg-card text-card-foreground shadow-sm mb-10"}>
+        <NavigationMenu className={"absolute py-2 top-0 left-0 max-w-full w-full border-b-2 bg-card text-card-foreground shadow-sm mb-10"}>
             <div className={"flex px-4  max-w-full w-full justify-between items-center md:px-12"}>
                 <a
                     rel={"noreferrer"}

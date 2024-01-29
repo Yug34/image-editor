@@ -27,35 +27,25 @@ import {
 import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
 import {downloadItem, readImageDimensions} from "@/lib/utils";
 import {FloatingText} from "@/app/components/Editor/FloatingText";
+import {useImageDataStore} from "@/store/imageDataStore";
 
-export default function Index() {
+export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const messageRef = useRef<HTMLParagraphElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Store image data as a Byte Array
-    const [image, setImage] = useState<Uint8Array | null>(null);
-    // URL to the image Byte Array blob above ^
-    const [sourceImageURL, setSourceImageURL] = useState<string | null>(null);
-    const [prevSourceImageURLs, setPrevSourceImageURLs] = useState<string[]>([]);
-
-    // Storing image format, JPG/JPEG/PNG.
-    const [imageFormat, setImageFormat] = useState<string | null>(null);
-    const [imageDimensions, setImageDimensions] = useState({
-        x: 0,
-        y: 0
-    });
+    const {image, setImage, sourceImageURL, setSourceImageURL, prevSourceImageURLs, setPrevSourceImageURLs, imageFormat, setImageFormat, setImageDimensions, imageDimensions} = useImageDataStore();
 
     useEffect(() => {
         // Set sourceImageURL to the last image in prevSourceImageURLs
         if (prevSourceImageURLs.length > 0) {
             setSourceImageURL(prevSourceImageURLs[prevSourceImageURLs.length - 1]);
         }
-    }, [prevSourceImageURLs]);
+    }, [prevSourceImageURLs, setSourceImageURL]);
 
     // Add a new image URL to the end of prevSourceImageURLs
     const addURLToPrevList = (newURL: string) => {
-        setPrevSourceImageURLs(prevState => [...prevState, newURL]);
+        setPrevSourceImageURLs([...prevSourceImageURLs, newURL]);
     }
 
     // Add URL at the end of prevSourceImageURLs, remove it from WASM memory
@@ -65,7 +55,7 @@ export default function Index() {
             await ffmpeg.deleteFile(`input.${imageFormat}`);
             await ffmpeg.writeFile(`input.${imageFormat}`, await fetchFile(prevSourceImageURLs[prevSourceImageURLs.length - 2]));
 
-            setPrevSourceImageURLs(previousArr => (previousArr.slice(0, -1)));
+            setPrevSourceImageURLs(prevSourceImageURLs.slice(0, -1));
         }
     }
 

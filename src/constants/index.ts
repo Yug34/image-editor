@@ -1,3 +1,7 @@
+import starry from "../../public/images/Starry.png";
+import iimPhoto from "../../public/images/iimPhoto.png";
+import fttwte from "../../public/images/forthosethatwishtoexist.png";
+
 export type FontFace = {
     display: string;
     file: string;
@@ -42,5 +46,20 @@ export const FONTFACES: FontFace[] = [
     {
         display: "OpenSans SemiboldItalic",
         file: "OpenSans-SemiboldItalic.ttf"
+    },
+]
+
+export const IMAGES = [
+    {
+        source: starry,
+        alt: "Starry night"
+    },
+    {
+        source: iimPhoto,
+        alt: "A photo I took in IIM Ahmedabad"
+    },
+    {
+        source: fttwte,
+        alt: "Architects' FTTWE album cover"
     },
 ]

@@ -8,6 +8,7 @@ import Image from "next/image";
 import starry from "../../../../public/images/Starry.png";
 import iimPhoto from "../../../../public/images/iimPhoto.png";
 import fttwte from "../../../../public/images/forthosethatwishtoexist.png";
+import {IMAGES} from "@/constants";
 
 const Loader = () => (
     <svg className={"animate-spin"} stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -30,37 +31,15 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({initialize, fileInputRef, initializeWithPreloadedImage, isFFmpegLoaded}: ImageUploadProps) {
-    const IMAGES = [
-        {
-            source: starry,
-            alt: "Starry night"
-        },
-        {
-            source: iimPhoto,
-            alt: "A photo I took in IIM Ahmedabad"
-        },
-        {
-            source: fttwte,
-            alt: "Architects' FTTWE album cover"
-        },
-    ]
-
     return (
         <Card>
             <CardHeader>
                 <CardTitle className="mb-3 flex justify-between items-center">
                     <div>Add an image to edit</div>
-                    {!isFFmpegLoaded ? (
-                        <small className={"flex gap-x-4 text-green-400"}>
-                            Loading FFmpeg
-                            <Loader />
-                        </small>
-                    ) : (
-                        <small className={"flex gap-x-4 text-green-400"}>
-                            FFmpeg loaded
-                            <LoadedCheck/>
-                        </small>
-                    )}
+                    <small className={"flex gap-x-4 text-green-400"}>
+                        {!isFFmpegLoaded ? "Loading FFmpeg" : "FFmpeg Loaded"}
+                        {!isFFmpegLoaded ? <Loader /> : <LoadedCheck />}
+                    </small>
                 </CardTitle>
             </CardHeader>
 
