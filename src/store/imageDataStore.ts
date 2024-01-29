@@ -7,6 +7,7 @@ interface ImageDataStoreState {
     setSourceImageURL: (url: string) => void;
     prevSourceImageURLs: string[]; // Array to keep track of URLs to previous images in memory
     setPrevSourceImageURLs: (urls: string[]) => void;
+    addURLToPrevList: (url: string) => void; // Add a new image URL to the end of prevSourceImageURLs
     imageFormat: string | null; // Storing image format, JPG/JPEG/PNG.
     setImageFormat: (format: string) => void;
     imageDimensions: {
@@ -23,6 +24,9 @@ export const useImageDataStore = create<ImageDataStoreState>()((set) => ({
     setSourceImageURL: (url: string) => set(() => ({sourceImageURL: url})),
     prevSourceImageURLs: [],
     setPrevSourceImageURLs: (urls: string[]) => set(() => ({prevSourceImageURLs: urls})),
+    addURLToPrevList: (url: string) => set((state) => ({
+        prevSourceImageURLs: [...state.prevSourceImageURLs, url]
+    })),
     imageFormat: null,
     setImageFormat: (imageFormat: string) => set(() => ({imageFormat: imageFormat})),
     imageDimensions: {

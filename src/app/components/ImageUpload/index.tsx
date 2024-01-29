@@ -1,5 +1,5 @@
 "use client";
-import React, {ChangeEvent, RefObject} from "react";
+import React, {ChangeEvent, RefObject, useEffect, useRef} from "react";
 import {UploadIcon} from "@radix-ui/react-icons";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
@@ -10,6 +10,9 @@ import iimPhoto from "../../../../public/images/iimPhoto.png";
 import fttwte from "../../../../public/images/forthosethatwishtoexist.png";
 import {IMAGES} from "@/constants";
 import {useFfmpegDataStore} from "@/store/ffmpegDataStore";
+import {useImageDataStore} from "@/store/imageDataStore";
+import {fetchFile} from "@ffmpeg/util";
+import {readImageDimensions} from "@/lib/utils";
 
 const Loader = () => (
     <svg className={"animate-spin"} stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -26,82 +29,108 @@ const LoadedCheck = () => (
 
 interface ImageUploadProps {
     fileInputRef: RefObject<HTMLInputElement>;
-    initialize(e: ChangeEvent | null, fileURL?: string): Promise<void>;
 }
 
-export default function ImageUpload({initialize, fileInputRef}: ImageUploadProps) {
-    const {isFFmpegLoaded} = useFfmpegDataStore();
+export default function ImageUpload({fileInputRef}: ImageUploadProps) {
+    const {isFFmpegLoaded, FFmpeg} = useFfmpegDataStore();
+    const {setImageFormat, setImageDimensions, setImage, addURLToPrevList} = useImageDataStore();
+
+    const initialize = async (e: ChangeEvent | null, fileURL?: string) => {
+        let imgFormat: string;
+        let fileData: Uint8Array;
+        if (e === null) {
+            imgFormat = "png"; // All preloaded images are PNGs.
+            fileData = await fetchFile(fileURL);
+        } else {
+            const file = (e.target as HTMLInputElement)!.files![0];
+            imgFormat = file.type.split("/")[1];
+            fileData = await fetchFile(file);
+        }
+        setImageFormat(imgFormat);
+
+        await FFmpeg.writeFile(`input.${imgFormat}`, fileData);
+        setImageDimensions(await readImageDimensions(FFmpeg, `input.${imgFormat}`));
+
+        FFmpeg.readFile(`input.${imgFormat}`).then((imageData) => {
+            const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${imgFormat}`}));
+            addURLToPrevList(imageURL);
+        });
+
+        setImage(fileData);
+    }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="mb-3 flex justify-between items-center">
-                    <div>Add an image to edit</div>
-                    <small className={"flex gap-x-4 text-green-400"}>
-                        {!isFFmpegLoaded ? "Loading FFmpeg" : "FFmpeg Loaded"}
-                        {!isFFmpegLoaded ? <Loader /> : <LoadedCheck />}
-                    </small>
-                </CardTitle>
-            </CardHeader>
+        <div className={"flex flex-col h-full justify-center items-start"}>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="mb-3 flex justify-between items-center">
+                        <div>Add an image to edit</div>
+                        <small className={"flex gap-x-4 text-green-400"}>
+                            {!isFFmpegLoaded ? "Loading FFmpeg" : "FFmpeg Loaded"}
+                            {!isFFmpegLoaded ? <Loader /> : <LoadedCheck />}
+                        </small>
+                    </CardTitle>
+                </CardHeader>
 
-            <CardContent>
-                <Label htmlFor="dropzone-file" className={"cursor-pointer"}>
-                    <Card
-                        className="flex p-4 items-center justify-center w-full brightness-[0.95] hover:brightness-[0.90] min-w-[300px] md:min-w-[600px] dark:brightness-125 dark:hover:brightness-150">
-                        <div className="text-center w-full">
-                            <div className="border p-2 rounded-md max-w-min mx-auto">
-                                <UploadIcon/>
+                <CardContent>
+                    <Label htmlFor="dropzone-file" className={"cursor-pointer"}>
+                        <Card
+                            className="flex p-4 items-center justify-center w-full brightness-[0.95] hover:brightness-[0.90] min-w-[300px] md:min-w-[600px] dark:brightness-125 dark:hover:brightness-150">
+                            <div className="text-center w-full">
+                                <div className="border p-2 rounded-md max-w-min mx-auto">
+                                    <UploadIcon/>
+                                </div>
+
+                                <p className="my-2 text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="font-semibold">Click here to upload an image</span>
+                                </p>
+                                <p className="text-xs text-gray-400 dark:text-gray-400">
+                                    Formats supported: PNG, JPG, WebP
+                                </p>
                             </div>
+                        </Card>
+                    </Label>
 
-                            <p className="my-2 text-sm text-gray-500 dark:text-gray-400">
-                                <span className="font-semibold">Click here to upload an image</span>
-                            </p>
-                            <p className="text-xs text-gray-400 dark:text-gray-400">
-                                Formats supported: PNG, JPG, WebP
-                            </p>
+                    <Input
+                        id="dropzone-file"
+                        accept="image/png, image/jpeg, image/webp"
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => {
+                            if(isFFmpegLoaded) {
+                                initialize(e);
+                            }
+                        }}
+                    />
+
+                    <div className="relative mt-4">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
                         </div>
-                    </Card>
-                </Label>
-
-                <Input
-                    id="dropzone-file"
-                    accept="image/png, image/jpeg, image/webp"
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => {
-                        if(isFFmpegLoaded) {
-                            initialize(e);
-                        }
-                    }}
-                />
-
-                <div className="relative mt-4">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
+                        <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
                             Or pick one of these
                         </span>
+                        </div>
                     </div>
-                </div>
 
-                <div className="flex gap-x-4 max-w-full px-2 pt-4">
-                    {IMAGES.map(({source, alt}) => (
-                        <Image
-                            key={alt}
-                            alt={alt}
-                            src={source}
-                            className={"max-w-[200px] rounded-lg cursor-pointer hover:brightness-[1.15]"}
-                            onClick={async () => {
-                                if (isFFmpegLoaded) {
-                                    await initialize(null, source.src);
-                                }
-                            }}
-                        />
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
+                    <div className="flex gap-x-4 max-w-full px-2 pt-4">
+                        {IMAGES.map(({source, alt}) => (
+                            <Image
+                                key={alt}
+                                alt={alt}
+                                src={source}
+                                className={"max-w-[200px] rounded-lg cursor-pointer hover:brightness-[1.15]"}
+                                onClick={async () => {
+                                    if (isFFmpegLoaded) {
+                                        await initialize(null, source.src);
+                                    }
+                                }}
+                            />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

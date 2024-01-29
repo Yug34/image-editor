@@ -1,6 +1,6 @@
 "use client";
-import {ChangeEvent, useEffect, useRef, useState} from "react";
-import {fetchFile, toBlobURL} from "@ffmpeg/util";
+import {useEffect, useRef, useState} from "react";
+import {fetchFile} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
 import {DownloadIcon, Pencil2Icon, TransparencyGridIcon} from "@radix-ui/react-icons"
 
@@ -12,9 +12,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import {TextDialog} from "@/app/components/Editor/TextDialog";
-import {FONTFACES} from "@/constants";
 import {BorderDialog} from "@/app/components/Editor/BorderDialog";
-import ImageUpload from "@/app/components/ImageUpload";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +22,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
-import {downloadItem, readImageDimensions} from "@/lib/utils";
+import {downloadItem} from "@/lib/utils";
 import {FloatingText} from "@/app/components/Editor/FloatingText";
 import {useImageDataStore} from "@/store/imageDataStore";
 import {useTransformationsDataStore} from "@/store/transformationsDataStore";
@@ -33,20 +31,19 @@ import {useFfmpegDataStore} from "@/store/ffmpegDataStore";
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
     const messageRef = useRef<HTMLParagraphElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const {
-        image,
-        setImage,
         sourceImageURL,
         setSourceImageURL,
         prevSourceImageURLs,
         setPrevSourceImageURLs,
         imageFormat,
-        setImageFormat,
-        setImageDimensions,
-        imageDimensions
+        imageDimensions,
+        addURLToPrevList
     } = useImageDataStore();
+
+    const followDivRef = useRef<HTMLDivElement | null>(null);
+    const {FFmpeg} = useFfmpegDataStore();
 
     useEffect(() => {
         // Set sourceImageURL to the last image in prevSourceImageURLs
@@ -55,16 +52,7 @@ export default function Editor() {
         }
     }, [prevSourceImageURLs, setSourceImageURL]);
 
-    const followDivRef = useRef<HTMLDivElement | null>(null);
-
-    const {FFmpeg, isFFmpegLoaded, setIsFFmpegLoaded} = useFfmpegDataStore();
-
-    // Add a new image URL to the end of prevSourceImageURLs
-    const addURLToPrevList = (newURL: string) => {
-        setPrevSourceImageURLs([...prevSourceImageURLs, newURL]);
-    }
-
-    // Add URL at the end of prevSourceImageURLs, remove it from WASM memory
+    // remove URL at the end of prevSourceImageURLs, remove associated image from WASM memory
     const removeURLFromPrevList = async () => {
         if (prevSourceImageURLs.length > 1) {
             await FFmpeg.deleteFile(`input.${imageFormat}`);
@@ -120,55 +108,6 @@ export default function Editor() {
         setTextPositionListener(textPositionListener);
     }
 
-    const loadFFmpegBinaries = async () => {
-        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-
-        FFmpeg.on('log', ({message}) => {
-            console.log(message);
-        });
-
-        // toBlobURL is used to bypass CORS issue, urls with the same domain can be used directly.
-        await FFmpeg.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm')
-        });
-
-        setIsFFmpegLoaded(true);
-    }
-
-    useEffect(() => {
-        (async () => {
-            await loadFFmpegBinaries();
-            await Promise.all(FONTFACES.map(async fontFace => {
-                await FFmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-yug34.vercel.app/"}/fonts/${fontFace.file}`));
-            }));
-        })();
-    }, []);
-
-    const initialize = async (e: ChangeEvent | null, fileURL?: string) => {
-        let imgFormat: string;
-        let fileData: Uint8Array;
-        if (e === null) {
-            imgFormat = "png"; // All preloaded images are PNGs.
-            fileData = await fetchFile(fileURL);
-        } else {
-            const file = (e.target as HTMLInputElement)!.files![0];
-            imgFormat = file.type.split("/")[1];
-            fileData = await fetchFile(file);
-        }
-        setImageFormat(imgFormat);
-
-        await FFmpeg.writeFile(`input.${imgFormat}`, fileData);
-        setImageDimensions(await readImageDimensions(FFmpeg, `input.${imgFormat}`));
-
-        FFmpeg.readFile(`input.${imgFormat}`).then((imageData) => {
-            const imageURL = URL.createObjectURL(new Blob([imageData], {type: `image/${imgFormat}`}));
-            addURLToPrevList(imageURL);
-        });
-
-        setImage(fileData);
-    }
-
     const cleanUpWASMEnvironment = async () => {
         const data = await FFmpeg.readFile(`output.${imageFormat}`);
         const imageURL = URL.createObjectURL(new Blob([data], {type: `image/${imageFormat}`}));
@@ -208,7 +147,7 @@ export default function Editor() {
         await cleanUpWASMEnvironment();
     }
 
-    return (isFFmpegLoaded && image) ? (
+    return (
         <div className={"flex flex-col w-full h-full justify-center items-center"}>
             <p ref={messageRef}></p>
             <Card className={"p-0"}>
@@ -332,10 +271,6 @@ export default function Editor() {
                 text={watch("text")}
                 imageDimensions={imageDimensions}
             />
-        </div>
-    ) : (
-        <div className={"flex flex-col h-full justify-center items-start"}>
-            <ImageUpload fileInputRef={fileInputRef} initialize={initialize}/>
         </div>
     )
 }
