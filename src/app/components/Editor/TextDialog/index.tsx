@@ -13,20 +13,21 @@ import {FONTFACES} from "@/constants";
 import {HexColorPicker} from "react-colorful";
 import {Dispatch, SetStateAction} from "react";
 import {TextIcon} from "@radix-ui/react-icons";
+import {useTransformationsDataStore} from "@/store/transformationsDataStore";
 
 interface TextDialogProps {
     isTextDialogOpen: boolean;
     setIsTextDialogOpen: Dispatch<SetStateAction<boolean>>;
     control: Control<{text: string, fontSize: number, fontFile: string}>;
-    textColor: string;
-    setTextColor: Dispatch<SetStateAction<string>>;
     text: string;
     fontSize: number;
     handleTextApplyClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
     isInsideDropdownMenu?: boolean;
 }
 
-export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, textColor, setTextColor, text, fontSize, handleTextApplyClick, isInsideDropdownMenu}: TextDialogProps) => {
+export const TextDialog = ({isTextDialogOpen, setIsTextDialogOpen, control, text, fontSize, handleTextApplyClick, isInsideDropdownMenu}: TextDialogProps) => {
+    const {setTextColor, textColor} = useTransformationsDataStore();
+
     return (
         <Dialog open={isTextDialogOpen} onOpenChange={setIsTextDialogOpen}>
             <DialogTrigger asChild>

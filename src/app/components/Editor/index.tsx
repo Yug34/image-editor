@@ -28,6 +28,7 @@ import {UndoEditCTA} from "@/app/components/Editor/UndoEditCTA";
 import {downloadItem, readImageDimensions} from "@/lib/utils";
 import {FloatingText} from "@/app/components/Editor/FloatingText";
 import {useImageDataStore} from "@/store/imageDataStore";
+import {useTransformationsDataStore} from "@/store/transformationsDataStore";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -63,10 +64,8 @@ export default function Editor() {
     const ffmpegRef = useRef(new FFmpeg());
 
     const followDivRef = useRef<HTMLDivElement | null>(null);
-    const [isApplyingText, setIsApplyingText] = useState<boolean>(false);
-    const [textPositionListener, setTextPositionListener] = useState<((e: any) => void) | null>(null);
-    const [textColor, setTextColor] = useState("#00ff00");
-    const [borderColor, setBorderColor] = useState("#00ff00");
+
+    const {isApplyingText, setTextPositionListener, setIsApplyingText, setTextColor, setBorderColor, textPositionListener, textColor, borderColor} = useTransformationsDataStore();
 
     const {control, watch} = useForm({
         mode: "onChange",
@@ -127,7 +126,7 @@ export default function Editor() {
             await loadFFmpegBinaries();
             const ffmpeg = ffmpegRef.current;
             await Promise.all(FONTFACES.map(async fontFace => {
-                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-ten-drab.vercel.app"}/fonts/${fontFace.file}`));
+                await ffmpeg.writeFile(fontFace.file, await fetchFile(`${process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://image-editor-yug34.vercel.app/"}/fonts/${fontFace.file}`));
             }));
         })();
     }, []);
@@ -234,8 +233,6 @@ export default function Editor() {
                                         isBorderDialogOpen={isBorderDialogOpen}
                                         setIsBorderDialogOpen={setIsBorderDialogOpen}
                                         borderControl={borderControl}
-                                        borderColor={borderColor}
-                                        setBorderColor={setBorderColor}
                                         addBorderToImage={addBorderToImage}
                                         isInsideDropdownMenu={true}
                                     />
@@ -245,8 +242,6 @@ export default function Editor() {
                                         isTextDialogOpen={isTextDialogOpen}
                                         setIsTextDialogOpen={setIsTextDialogOpen}
                                         control={control}
-                                        textColor={textColor}
-                                        setTextColor={setTextColor}
                                         text={watch("text")}
                                         fontSize={watch("fontSize")}
                                         handleTextApplyClick={handleTextApplyClick}
@@ -288,16 +283,12 @@ export default function Editor() {
                             isBorderDialogOpen={isBorderDialogOpen}
                             setIsBorderDialogOpen={setIsBorderDialogOpen}
                             borderControl={borderControl}
-                            borderColor={borderColor}
-                            setBorderColor={setBorderColor}
                             addBorderToImage={addBorderToImage}
                         />
                         <TextDialog
                             isTextDialogOpen={isTextDialogOpen}
                             setIsTextDialogOpen={setIsTextDialogOpen}
                             control={control}
-                            textColor={textColor}
-                            setTextColor={setTextColor}
                             text={watch("text")}
                             fontSize={watch("fontSize")}
                             handleTextApplyClick={handleTextApplyClick}

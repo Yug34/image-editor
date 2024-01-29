@@ -12,13 +12,12 @@ import {Input} from "@/components/ui/input";
 import {HexColorPicker} from "react-colorful";
 import {Dispatch, SetStateAction} from "react";
 import { BorderAllIcon } from "@radix-ui/react-icons";
+import {useTransformationsDataStore} from "@/store/transformationsDataStore";
 
 interface BorderDialogProps {
     isBorderDialogOpen: boolean;
     setIsBorderDialogOpen: Dispatch<SetStateAction<boolean>>;
     borderControl: Control<{borderSize: number}>;
-    borderColor: string;
-    setBorderColor: Dispatch<SetStateAction<string>>;
     addBorderToImage: () => void;
     isInsideDropdownMenu?: boolean;
 }
@@ -27,11 +26,11 @@ export const BorderDialog = ({
     isBorderDialogOpen,
     setIsBorderDialogOpen,
     borderControl,
-    borderColor,
-    setBorderColor,
     addBorderToImage,
     isInsideDropdownMenu
 }: BorderDialogProps) => {
+    const {borderColor, setBorderColor} = useTransformationsDataStore();
+
     return (
         <Dialog
             open={isBorderDialogOpen}
