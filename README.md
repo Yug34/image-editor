@@ -15,12 +15,6 @@ A client-side image editor, made with `FFmpeg.wasm` and NextJS.
 * **Resize Image dimensions: TODO!**
 * **Compress Image: TODO!**
 
-## Usage
-
-Put in any email and a password (min. length 5 characters), and it should ask you to upload an image.
-
-(...or just skip login)
-
 ## Run locally
 
 ```bash
