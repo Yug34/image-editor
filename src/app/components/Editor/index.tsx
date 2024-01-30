@@ -2,7 +2,8 @@
 import {useEffect, useRef, useState} from "react";
 import {fetchFile} from "@ffmpeg/util";
 import {Button} from "@/components/ui/button";
-import {DownloadIcon, Pencil2Icon, TransparencyGridIcon} from "@radix-ui/react-icons"
+import {DownloadIcon, Pencil2Icon} from "@radix-ui/react-icons"
+import React from "react";
 
 import {useForm} from "react-hook-form";
 import {
@@ -27,6 +28,7 @@ import {FloatingText} from "@/app/components/Editor/FloatingText";
 import {useImageDataStore} from "@/store/imageDataStore";
 import {useTransformationsDataStore} from "@/store/transformationsDataStore";
 import {useFfmpegDataStore} from "@/store/ffmpegDataStore";
+import {GrayscaleCTA} from "@/app/components/Editor/GrayscaleCTA";
 
 export default function Editor() {
     const imageRef = useRef<HTMLImageElement | null>(null);
@@ -146,6 +148,41 @@ export default function Editor() {
         await cleanUpWASMEnvironment();
     }
 
+    const TransformationCTAs: { type: string; el: React.ReactNode }[] = [
+        {
+            type: "Grayscale",
+            el: <GrayscaleCTA greyScale={greyScale}/>
+        },
+        {
+            type: "Border",
+            el: (
+                <BorderDialog
+                    isBorderDialogOpen={isBorderDialogOpen}
+                    setIsBorderDialogOpen={setIsBorderDialogOpen}
+                    borderControl={borderControl}
+                    addBorderToImage={addBorderToImage}
+                />
+            )
+        },
+        {
+            type: "Text",
+            el: (
+                <TextDialog
+                    isTextDialogOpen={isTextDialogOpen}
+                    setIsTextDialogOpen={setIsTextDialogOpen}
+                    control={control}
+                    text={watch("text")}
+                    fontSize={watch("fontSize")}
+                    handleTextApplyClick={handleTextApplyClick}
+                />
+            )
+        },
+        {
+            type: "Undo",
+            el: <UndoEditCTA removeURLFromPrevList={removeURLFromPrevList}/>
+        }
+    ];
+
     return (
         <div className={"flex flex-col w-full h-full justify-center items-center"}>
             <Card className={"p-0"}>
@@ -164,42 +201,11 @@ export default function Editor() {
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>Select an edit to make</DropdownMenuLabel>
                                 <DropdownMenuSeparator/>
-                                <DropdownMenuItem className={"p-0"}>
-                                    <Button
-                                        className={"border-none w-full flex justify-between"}
-                                        variant={"outline"} onClick={greyScale}
-                                    >
-                                        Greyscale Image
-                                        <TransparencyGridIcon/>
-                                    </Button>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className={"p-0"}>
-                                    <BorderDialog
-                                        isBorderDialogOpen={isBorderDialogOpen}
-                                        setIsBorderDialogOpen={setIsBorderDialogOpen}
-                                        borderControl={borderControl}
-                                        addBorderToImage={addBorderToImage}
-                                        isInsideDropdownMenu={true}
-                                    />
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className={"p-0"}>
-                                    <TextDialog
-                                        isTextDialogOpen={isTextDialogOpen}
-                                        setIsTextDialogOpen={setIsTextDialogOpen}
-                                        control={control}
-                                        text={watch("text")}
-                                        fontSize={watch("fontSize")}
-                                        handleTextApplyClick={handleTextApplyClick}
-                                        isInsideDropdownMenu={true}
-                                    />
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator/>
-                                <DropdownMenuItem className={"p-0"}>
-                                    <UndoEditCTA
-                                        removeURLFromPrevList={removeURLFromPrevList}
-                                        isInsideDropdownMenu={true}
-                                    />
-                                </DropdownMenuItem>
+                                {TransformationCTAs.map(({type, el}) => (
+                                    <DropdownMenuItem className={"p-0"} key={type}>
+                                        {el}
+                                    </DropdownMenuItem>
+                                ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
                         <Button
@@ -216,28 +222,11 @@ export default function Editor() {
                         style={{marginTop: "0px", marginBottom: "16px"}} // className styles weren't working, FIXME!
                         className={"hidden border-b lg:flex"}
                     >
-                        <Button
-                            className={"rounded-none rounded-tl-lg border-none"}
-                            variant={"outline"} onClick={greyScale}
-                        >
-                            Greyscale Image
-                            <TransparencyGridIcon className={"ml-2"}/>
-                        </Button>
-                        <BorderDialog
-                            isBorderDialogOpen={isBorderDialogOpen}
-                            setIsBorderDialogOpen={setIsBorderDialogOpen}
-                            borderControl={borderControl}
-                            addBorderToImage={addBorderToImage}
-                        />
-                        <TextDialog
-                            isTextDialogOpen={isTextDialogOpen}
-                            setIsTextDialogOpen={setIsTextDialogOpen}
-                            control={control}
-                            text={watch("text")}
-                            fontSize={watch("fontSize")}
-                            handleTextApplyClick={handleTextApplyClick}
-                        />
-                        <UndoEditCTA removeURLFromPrevList={removeURLFromPrevList} />
+                        {TransformationCTAs.map(({type, el}) => (
+                            <React.Fragment key={type}>
+                                {el}
+                            </React.Fragment>
+                        ))}
                         <Button
                             className={"ml-auto rounded-none rounded-tr-lg border-y-0 border-r-0 border-l"}
                             onClick={() => downloadItem(`output.${imageFormat}`, sourceImageURL!)}

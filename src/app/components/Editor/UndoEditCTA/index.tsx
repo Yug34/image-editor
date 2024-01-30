@@ -5,20 +5,19 @@ import {useImageDataStore} from "@/store/imageDataStore";
 
 interface UndoEditCTAProps {
     removeURLFromPrevList: () => Promise<void>;
-    isInsideDropdownMenu?: boolean;
 }
 
-export const UndoEditCTA = ({removeURLFromPrevList, isInsideDropdownMenu}: UndoEditCTAProps) => {
+export const UndoEditCTA = ({removeURLFromPrevList}: UndoEditCTAProps) => {
     const {prevSourceImageURLs} = useImageDataStore();
 
     return (
         <Button
-            className={cn(
-                isInsideDropdownMenu ? "border-none w-full flex justify-between" : "rounded-none border-y-0",
+            className={cn("border-0 w-full flex justify-between lg:rounded-none lg:border-y-0 lg:border-r",
                 prevSourceImageURLs.length <= 1 ? "cursor-not-allowed" : "cursor-pointer"
             )}
             onClick={removeURLFromPrevList}
             variant={"outline"}
+            disabled={prevSourceImageURLs.length <= 1}
         >
             Undo
             <ResetIcon className={"ml-2"}/>
